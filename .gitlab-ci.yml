@@ -5,7 +5,7 @@ variables:
   DEB_GPG_KEY_NAME: "Datadog, Inc <package@datadoghq.com>"
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_8387EEAF
   DEB_SIGNING_PASSPHRASE_SSM_NAME: ci.datadog-agent.deb_signing_key_passphrase_8387EEAF
-  DEB_S3_BUCKET: apt.datad0g.com
+  DEB_S3_BUCKET: apttrial.datad0g.com
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
   OMNIBUS_PACKAGE_DIR: $CI_PROJECT_DIR/.omnibus/pkg/
