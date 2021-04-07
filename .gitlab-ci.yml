@@ -19,7 +19,7 @@ variables:
   - set +x
   - DEB_GPG_KEY=$(aws ssm get-parameter --region us-east-1 --name $DEB_GPG_KEY_SSM_NAME --with-decryption --query "Parameter.Value" --out text)
   - printf -- "${DEB_GPG_KEY}" | gpg --import --batch
-  - export DEB_SIGNING_PASSPHRASE=$(aws ssm get-parameter --region us-east-1 --name $DEB_SIGNING_PASSPHRASE_SSM_NAME --with-decry    ption --query "Parameter.Value" --out text)
+  - export DEB_SIGNING_PASSPHRASE=$(aws ssm get-parameter --region us-east-1 --name $DEB_SIGNING_PASSPHRASE_SSM_NAME --with-decryption --query "Parameter.Value" --out text)
 
 stages:
   - build
