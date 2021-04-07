@@ -29,7 +29,7 @@ stages:
 build_deb:
   stage: build
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: ["runner:main", "size:medium"]
+  tags: ["runner:main", "size:large"]
   artifacts:
     expire_in: 2 weeks
     paths:
@@ -46,14 +46,14 @@ build_deb:
 test_deb:
   stage: test
   image: debian:stable
-  tags: ["runner:main", "size:medium"]
+  tags: ["runner:main", "size:large"]
   script:
     - echo "TODO"
 
 deploy_deb:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
-  tags: ["runner:main", "size:medium"]
+  tags: ["runner:main", "size:large"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
