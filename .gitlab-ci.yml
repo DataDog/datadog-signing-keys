@@ -1,0 +1,64 @@
+variables:
+  DATADOG_AGENT_BUILDERS: v3745210-1e1ec67
+  DATADOG_AGENT_BUILDIMAGES: v4164272-bca7bd6
+  DEB_BUCKET_BRANCH: nightly  # 'nightly', 'beta' or 'stable'
+  DEB_GPG_KEY_NAME: "Datadog, Inc <package@datadoghq.com>"
+  DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_8387EEAF
+  DEB_SIGNING_PASSPHRASE_SSM_NAME: ci.datadog-agent.deb_signing_key_passphrase_8387EEAF
+  DEB_S3_BUCKET: apt.datad0g.com
+  DESTINATION_DEB: datadog-signing-keys.deb
+  OMNIBUS_BASE_DIR: /.omnibus
+  OMNIBUS_PACKAGE_DIR: $CI_PROJECT_DIR/.omnibus/pkg/
+  PACKAGE_VERSION_OVERRIDE: ""
+  PROJECT_NAME: datadog-signing-keys
+  S3_ARTIFACTS_URI: s3://dd-ci-artefacts-build-stable/$CI_PROJECT_NAME/$CI_PIPELINE_ID
+  S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
+  S3_CP_OPTIONS: --only-show-errors --region us-east-1 --sse AES256
+
+.setup_deb_signing_key: &setup_deb_signing_key
+  - set +x
+  - DEB_GPG_KEY=$(aws ssm get-parameter --region us-east-1 --name $DEB_GPG_KEY_SSM_NAME --with-decryption --query "Parameter.Valu    e" --out text)
+  - printf -- "${DEB_GPG_KEY}" | gpg --import --batch
+  - export DEB_SIGNING_PASSPHRASE=$(aws ssm get-parameter --region us-east-1 --name $DEB_SIGNING_PASSPHRASE_SSM_NAME --with-decry    ption --query "Parameter.Value" --out text)
+
+stages:
+  - build
+  - test
+  - deploy
+
+build_deb:
+  stage: build
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
+  tags: ["runner:main", "size:medium"]
+  artifacts:
+    expire_in: 2 weeks
+    paths:
+      - $OMNIBUS_PACKAGE_DIR
+  script:
+    - bundle install
+    - *setup_deb_signing_key
+    - PACKAGE_VERSION=${PACKAGE_VERSION_OVERRIDE:-$(git describe --tags)} \
+        bundle exec omnibus build ${PROJECT_NAME} \
+        --override=base_dir:${OMNIBUS_BASE_DIR}
+    - $S3_CP_CMD $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb $S3_ARTIFACTS_URI/$DESTINATION_DEB
+    - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
+
+test_deb:
+  stage: test
+  image: debian:stable
+  tags: ["runner:main", "size:medium"]
+  script:
+    - echo "TODO"
+
+deploy_deb:
+  stage: deploy
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
+  tags: ["runner:main", "size:medium"]
+  before_script:
+    - ls $OMNIBUS_PACKAGE_DIR
+  rules:
+    - when: manual
+  script:
+    - *setup_deb_signing_key
+    - set +x
+    - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 6 -b $DEB_S3_BUCKET -a all --sign="DEB_GPG_KEY_NAME" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
