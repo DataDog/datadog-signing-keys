@@ -35,6 +35,7 @@ build_deb:
     paths:
       - $OMNIBUS_PACKAGE_DIR
   script:
+    - source /usr/local/rvm/scripts/rvm
     - bundle install
     - *setup_deb_signing_key
     - PACKAGE_VERSION=${PACKAGE_VERSION_OVERRIDE:-$(git describe --tags)} \
