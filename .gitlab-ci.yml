@@ -60,4 +60,4 @@ deploy_deb:
   script:
     - *setup_deb_signing_key
     - set +x
-    - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 6 -b $DEB_S3_BUCKET -a all --sign="DEB_GPG_KEY_NAME" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
+    - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 6 -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_NAME" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
