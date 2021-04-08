@@ -17,7 +17,16 @@ install_dir "/opt/#{name}"
 build_version ENV['PACKAGE_VERSION']
 build_iteration 1
 
-description 'TODO'
+description 'Datadog Signing Keys
+ The datadog-signing-keys package carries currently active public signing
+ keys that Datadog uses to sign APT repository metadata and DEB packages.
+ Having this package installed makes all the included keys trusted by APT
+ and allows for checking package-level signatures by debsig-verify.
+ .
+ Updating this package regularly will ensure presence of new keys prior
+ to key rotations performed by Datadog, eliminating the need to add new
+ keys manually.
+'
 
 dependency 'datadog-signing-keys'
 
