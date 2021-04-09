@@ -72,7 +72,7 @@ generate_testing_repo:
     - apt-ftparchive packages . > Packages
     - apt-ftparchive release . > Release
     - set +x
-    - echo "$DEB_SIGNING_PASSPHRASE" | gpg --armor --sign --detach-sign --local-user "$DEB_GPG_KEY_NAME" --batch --no-tty --passphrase-fd 0 -o Release.gpg Release
+    - echo "$DEB_SIGNING_PASSPHRASE" | gpg --armor --sign --detach-sign --local-user "$DEB_GPG_KEY_NAME" --batch --no-tty --passphrase-fd 0 --digest-algo SHA256 -o Release.gpg Release
 
 # Note: The image and upload command here should be kept in sync with those used in the agent-release-management repo
 deploy_deb:
