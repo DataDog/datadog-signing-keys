@@ -48,6 +48,7 @@ test_deb:
   image: debian:stable
   tags: ["runner:main", "size:large"]
   script:
+    - apt-get update
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
     - test/test.sh
 
