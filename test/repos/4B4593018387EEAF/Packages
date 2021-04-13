@@ -1,0 +1,18 @@
+Package: datadog-signing-keys
+Priority: extra
+Section: utils
+Installed-Size: 23
+Maintainer: Datadog Packages <package@datadoghq.com>
+Architecture: all
+Version: 1:0.1.0~6~gc2f48f2-1
+Filename: ./datadog-signing-keys_0.1.0~6~gc2f48f2-1_all.deb
+Size: 29716
+MD5sum: 0eecf9fb74922bede6e5c772a59fba96
+SHA1: bfb285f8c6d30a90072910cde10d097b72844163
+SHA256: 982ec23a8df57a2353a3b1ab0c994db9294623a568b704121cf9116206f5098a
+SHA512: 9ed9c4ad0856b4248f03b6bbf80169622cef48f952d9df209c97013e6a82c06883e480b9ec9d6bb57a23afc73802259ab0758c8876bb7d7d960b010dbf41ab20
+Description: TODO
+License: Apache License Version 2.0
+Vendor: Datadog <package@datadoghq.com>
+Homepage: https://www.datadoghq.com
+
