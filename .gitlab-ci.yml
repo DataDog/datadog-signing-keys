@@ -6,7 +6,7 @@ variables:
   DEB_GPG_KEY_NAME: "Datadog, Inc <package@datadoghq.com>"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
   DEB_SIGNING_PASSPHRASE_SSM_NAME: ci.datadog-agent.deb_signing_key_passphrase_${DEB_GPG_KEY_ID}
-  DEB_S3_BUCKET: apttrial.datad0g.com
+  DEB_S3_DESTINATION: trial  # trial, staging or prod
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
   OMNIBUS_PACKAGE_DIR: $CI_PROJECT_DIR/.omnibus/pkg/
@@ -85,8 +85,18 @@ deploy_deb:
   rules:
     - when: manual
   script:
+    - declare -Ar BUCKETS=( ["trial"]="apttrial.datad0g.com" ["staging"]="apt.datad0g.com" ["prod"]="apt.datadoghq.com" )
+    - export DEB_S3_BUCKET=${BUCKET[$DEB_S3_DESTINATION]}
+
     - *setup_deb_signing_key
     - set +x
+
+    # we invalidate explicitly after every upload to ensure that repos are as consistent as possible
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 6 -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
+    - cloudfront_invalidate --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable"
+
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 7 -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
+    - cloudfront_invalidate --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable"
+
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m main -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
+    - cloudfront_invalidate --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable"
