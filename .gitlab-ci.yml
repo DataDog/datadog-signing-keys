@@ -23,6 +23,9 @@ variables:
   - printf -- "${DEB_GPG_KEY}" | gpg --import --batch
   - export DEB_SIGNING_PASSPHRASE=$(aws ssm get-parameter --region us-east-1 --name $DEB_SIGNING_PASSPHRASE_SSM_NAME --with-decryption --query "Parameter.Value" --out text)
 
+.invalidate_repo: &invalidate_repo
+  - cd "$HOME/deploy_scripts/cloudfront-invalidation" && bundle exec ruby invalidate.rb --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable" && cd -
+
 stages:
   - build
   - test
@@ -93,10 +96,8 @@ deploy_deb:
 
     # we invalidate explicitly after every upload to ensure that repos are as consistent as possible
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 6 -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
-    - cloudfront_invalidate --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable"
-
+    - *invalidate_repo
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m 7 -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
-    - cloudfront_invalidate --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable"
-
+    - *invalidate_repo
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m main -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
-    - cloudfront_invalidate --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable"
+    - *invalidate_repo
