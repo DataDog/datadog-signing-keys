@@ -86,7 +86,7 @@ deploy_deb:
     - when: manual
   script:
     - declare -Ar BUCKETS=( ["trial"]="apttrial.datad0g.com" ["staging"]="apt.datad0g.com" ["prod"]="apt.datadoghq.com" )
-    - export DEB_S3_BUCKET=${BUCKET[$DEB_S3_DESTINATION]}
+    - export DEB_S3_BUCKET=${BUCKETS[$DEB_S3_DESTINATION]}
 
     - *setup_deb_signing_key
     - set +x
