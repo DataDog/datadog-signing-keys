@@ -30,7 +30,6 @@ variables:
   stage: test
   tags: ["runner:main", "size:large"]
   script:
-    - apt-get update
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
     - test/test.sh
 
@@ -60,10 +59,16 @@ test_deb_7:
   # not "https://"; to ensure this works fine, we include two policy files per key and we test
   # on Debian 7 to verify that the package works fine on old Debian systems
   image: debian:7.11
+  before_script:
+    # Debian 7 sources are already archived + their Release files are expired
+    - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
+    - apt-get update -o Acquire::Check-Valid-Until=false
 
 test_deb_stable:
   extends: .test_deb
   image: debian:stable
+  before_script:
+    - apt-get update
 
 generate_testing_repo:
   # You can use this task to generate a testing repository; the repository
