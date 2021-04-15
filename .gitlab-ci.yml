@@ -51,7 +51,9 @@ test_deb:
   image: debian:stable
   tags: ["runner:main", "size:large"]
   script:
-    - echo "TODO"
+    - apt-get update
+    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
+    - test/test.sh
 
 generate_testing_repo:
   # You can use this task to generate a testing repository; the repository
