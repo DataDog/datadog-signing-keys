@@ -94,7 +94,7 @@ deploy_deb:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
   tags: ["runner:main", "size:large"]
-  needs: ["build_deb", "test_deb"]
+  needs: ["build_deb", "test_deb_7", "test_deb_stable"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
