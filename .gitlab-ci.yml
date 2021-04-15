@@ -26,6 +26,14 @@ variables:
 .invalidate_repo: &invalidate_repo
   - cd "$HOME/deploy_scripts/cloudfront-invalidation" && bundle exec ruby invalidate.rb --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable" && cd -
 
+.test_deb:
+  stage: test
+  tags: ["runner:main", "size:large"]
+  script:
+    - apt-get update
+    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
+    - test/test.sh
+
 stages:
   - build
   - test
@@ -46,14 +54,16 @@ build_deb:
     - $S3_CP_CMD $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb $S3_ARTIFACTS_URI/$DESTINATION_DEB
     - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
 
-test_deb:
-  stage: test
+test_deb_7:
+  extends: .test_db
+  # debsig-verify on Debian 7.11 requires policy files to have Policy xmlns start with "http://",
+  # not "https://"; to ensure this works fine, we include two policy files per key and we test
+  # on Debian 7 to verify that the package works fine on old Debian systems
+  image: debian:7.11
+
+test_deb_stable:
+  extends: .test_deb
   image: debian:stable
-  tags: ["runner:main", "size:large"]
-  script:
-    - apt-get update
-    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
-    - test/test.sh
 
 generate_testing_repo:
   # You can use this task to generate a testing repository; the repository
