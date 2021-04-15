@@ -55,7 +55,7 @@ build_deb:
     - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
 
 test_deb_7:
-  extends: .test_db
+  extends: .test_deb
   # debsig-verify on Debian 7.11 requires policy files to have Policy xmlns start with "http://",
   # not "https://"; to ensure this works fine, we include two policy files per key and we test
   # on Debian 7 to verify that the package works fine on old Debian systems
