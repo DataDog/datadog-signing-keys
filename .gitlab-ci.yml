@@ -30,6 +30,8 @@ variables:
   stage: test
   tags: ["runner:main", "size:large"]
   script:
+    # ensure that apt-get update in test script doesn't fail because of problems with other sources
+    - echo "" > /etc/apt/sources.list
     - test/test.sh
 
 stages:
