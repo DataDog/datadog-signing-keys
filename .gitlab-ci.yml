@@ -57,7 +57,7 @@ test_deb_7:
   # debsig-verify on Debian 7.11 requires policy files to have Policy xmlns start with "http://",
   # not "https://"; to ensure this works fine, we include two policy files per key and we test
   # on Debian 7 to verify that the package works fine on old Debian systems
-  image: debian:7.11
+  image: registry.ddbuild.io/images/mirror/debian:7.11
   before_script:
     # Debian 7 sources are already archived + their Release files are expired
     - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
@@ -70,7 +70,7 @@ test_deb_7:
 
 test_deb_stable:
   extends: .test_deb
-  image: debian:stable
+  image: registry.ddbuild.io/images/mirror/debian:10.9
   before_script:
     - apt-get update
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
