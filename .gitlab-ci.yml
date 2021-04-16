@@ -70,7 +70,7 @@ test_deb_7:
     # rebuild the apt database after installing the package with dpkg
     - apt-get install -f
 
-test_deb_stable:
+test_deb_10:
   extends: .test_deb
   image: registry.ddbuild.io/images/mirror/debian:10.9
   before_script:
@@ -106,7 +106,7 @@ deploy_deb:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
   tags: ["runner:main", "size:large"]
-  needs: ["build_deb", "test_deb_7", "test_deb_stable"]
+  needs: ["build_deb", "test_deb_7", "test_deb_10"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
