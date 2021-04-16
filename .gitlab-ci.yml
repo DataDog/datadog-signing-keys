@@ -26,6 +26,14 @@ variables:
 .invalidate_repo: &invalidate_repo
   - cd "$HOME/deploy_scripts/cloudfront-invalidation" && bundle exec ruby invalidate.rb --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable" && cd -
 
+.test_deb:
+  stage: test
+  tags: ["runner:main", "size:large"]
+  script:
+    # ensure that apt-get update in test script doesn't fail because of problems with other sources
+    - echo "" > /etc/apt/sources.list
+    - test/test.sh
+
 stages:
   - build
   - test
@@ -46,14 +54,28 @@ build_deb:
     - $S3_CP_CMD $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb $S3_ARTIFACTS_URI/$DESTINATION_DEB
     - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
 
-test_deb:
-  stage: test
-  image: debian:stable
-  tags: ["runner:main", "size:large"]
-  script:
+test_deb_7:
+  extends: .test_deb
+  # debsig-verify on Debian 7.11 requires policy files to have Policy xmlns start with "http://",
+  # not "https://"; to ensure this works fine, we include two policy files per key and we test
+  # on Debian 7 to verify that the package works fine on old Debian systems
+  image: registry.ddbuild.io/images/mirror/debian:7.11
+  before_script:
+    # Debian 7 sources are already archived + their Release files are expired
+    - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
+    - apt-get update -o Acquire::Check-Valid-Until=false
+    - apt-get install -y debsig-verify
+    # apt-get in Debian 7 doesn't work with local packages
+    - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
+    # rebuild the apt database after installing the package with dpkg
+    - apt-get install -f
+
+test_deb_10:
+  extends: .test_deb
+  image: registry.ddbuild.io/images/mirror/debian:10.9
+  before_script:
     - apt-get update
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
-    - test/test.sh
 
 generate_testing_repo:
   # You can use this task to generate a testing repository; the repository
@@ -84,7 +106,7 @@ deploy_deb:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
   tags: ["runner:main", "size:large"]
-  needs: ["build_deb", "test_deb"]
+  needs: ["build_deb", "test_deb_7", "test_deb_10"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
