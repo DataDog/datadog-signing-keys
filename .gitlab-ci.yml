@@ -66,7 +66,7 @@ test_debian_7:
   extends: .test_deb
   image: registry.ddbuild.io/images/mirror/debian:7.11
   variables:
-    ENSURE_TRUSTED_GPG_D_KEYRING: true
+    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
   before_script:
     # Debian 7 sources are already archived + their Release files are expired
     - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
@@ -88,7 +88,7 @@ test_ubuntu_14:
   extends: .test_deb
   image: registry.ddbuild.io/images/mirror/ubuntu:14.04
   variables:
-    ENSURE_TRUSTED_GPG_D_KEYRING: true
+    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
   before_script:
     - apt-get update
     - apt-get install -y debsig-verify
