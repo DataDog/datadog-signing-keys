@@ -14,18 +14,12 @@ skip_transitive_dependency_licensing true
 source path: "."
 
 build do
-  apt_trust_dir = '/etc/apt/trusted.gpg.d/'
   policies_dir = '/etc/debsig/policies/'
   keyrings_dir = '/usr/share/debsig/keyrings/'
-  mkdir apt_trust_dir
   mkdir policies_dir
   mkdir keyrings_dir
 
   copy "files/keyrings/*", keyrings_dir
   copy "files/policies/*", policies_dir
-  Dir.entries("#{Omnibus::Config.project_root}/files/keyrings/").each do |key|
-    unless key.start_with? "."
-      copy "files/keyrings/#{key}/debsig.gpg", "#{apt_trust_dir}/datadog-#{key}.gpg"
-    end
-  end
+  copy "files/datadog-archive-keyring.gpg", "#{install_dir}/"
 end

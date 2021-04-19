@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# We don't want the package to own this file, as the file it should stay on
+# the system even if the user (accidentally) removes the package, e.g. during
+# a switch from datadog-agent to datadog-iot-agent.
+# NOTE: it's important that the name of this file stays the same across this
+# package and all installation methods. This ensures that installing this
+# package always overwrites the file instead of dropping another file
+# in the same dir.
+KEYRING_FILE_NAME=datadog-archive-keyring.gpg
+PACKAGED_KEYRING=/opt/datadog-signing-keys/${KEYRING_FILE_NAME}
+TRUSTED_GPG_D_KEYRING=/etc/apt/trusted.gpg.d/${KEYRING_FILE_NAME}
+USR_SHARE_KEYRING=/usr/share/keyrings/${KEYRING_FILE_NAME}
+
+KNOWN_DISTRIBUTION="(Debian|Ubuntu)"
+DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
+
+USE_TRUSTED_GPG_D=true
+DISTRIBUTION_VERSION=$(. /etc/os-release && echo "${VERSION_ID}" | tr "." " " | awk '{ print $1 }')
+
+if { [ "${DISTRIBUTION}" = "Debian" ] && [ "${DISTRIBUTION_VERSION}" -ge "9" ]; } || { [ "${DISTRIBUTION}" = "Ubuntu" ] && [ "${DISTRIBUTION_VERSION}" -ge "16" ]; } ; then
+    USE_TRUSTED_GPG_D=false
+fi
+
+# Always copy our keyring to /usr/share/keyring, because the sources list will always
+# point there, even on systems that don't recognize it - and things would break
+# if the system got updated to a version that does recognize it.
+cp ${PACKAGED_KEYRING} ${USR_SHARE_KEYRING}
+if [ "${USE_TRUSTED_GPG_D}" = "true" ] ; then
+    cp ${PACKAGED_KEYRING} ${TRUSTED_GPG_D_KEYRING}
+fi
+
+exit 0

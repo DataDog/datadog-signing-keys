@@ -49,7 +49,6 @@ package :deb do
 end
 
 keys.each do |key|
-  extra_package_file "/etc/apt/trusted.gpg.d/datadog-#{key}.gpg"
   extra_package_file "/etc/debsig/policies/#{key}"
   extra_package_file "/usr/share/debsig/keyrings/#{key}"
 end
