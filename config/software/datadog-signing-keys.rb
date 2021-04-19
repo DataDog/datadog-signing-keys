@@ -21,5 +21,4 @@ build do
 
   copy "files/keyrings/*", keyrings_dir
   copy "files/policies/*", policies_dir
-  copy "files/datadog-archive-keyring.gpg", "#{install_dir}/"
 end
