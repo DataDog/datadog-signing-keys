@@ -3,7 +3,9 @@
 # This product includes software developed at Datadog (https:#www.datadoghq.com/).
 # Copyright 2021-present Datadog, Inc.
 
-# Modify this when adding/removing keys
+# Modify this when adding/removing keys; also modify postinst script to add
+# the new key to the APT keyring (I didn't find a reasonable way to make
+# postinst script an omnibus template to render these in).
 keys = ['33EE313BAD9589B7', '4B4593018387EEAF']
 
 name 'datadog-signing-keys'
@@ -49,7 +51,6 @@ package :deb do
 end
 
 keys.each do |key|
-  extra_package_file "/etc/apt/trusted.gpg.d/datadog-#{key}.gpg"
   extra_package_file "/etc/debsig/policies/#{key}"
   extra_package_file "/usr/share/debsig/keyrings/#{key}"
 end

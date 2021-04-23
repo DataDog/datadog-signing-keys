@@ -54,12 +54,19 @@ build_deb:
     - $S3_CP_CMD $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb $S3_ARTIFACTS_URI/$DESTINATION_DEB
     - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
 
-test_deb_7:
+### Testing notes 
+# debsig-verify on Debian 7.11/Ubuntu 14.04 requires policy files to have
+# Policy xmlns start with "http://", not "https://"; to ensure this works
+# fine, we include two policy files per key and we test on Debian 7/Ubuntu 14
+# to verify that the package works fine on old Debian systems.
+# We also ensure that /etc/apt/trusted.gpg.d/datadog-archive-keyring.gpg
+# gets created on Debian 7/Ubuntu 14, since apt in these doesn't respect
+# the `[signed-by=...]` modifier in apt source files.
+test_debian_7:
   extends: .test_deb
-  # debsig-verify on Debian 7.11 requires policy files to have Policy xmlns start with "http://",
-  # not "https://"; to ensure this works fine, we include two policy files per key and we test
-  # on Debian 7 to verify that the package works fine on old Debian systems
   image: registry.ddbuild.io/images/mirror/debian:7.11
+  variables:
+    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
   before_script:
     # Debian 7 sources are already archived + their Release files are expired
     - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
@@ -70,9 +77,29 @@ test_deb_7:
     # rebuild the apt database after installing the package with dpkg
     - apt-get install -f
 
-test_deb_10:
+test_debian_10:
   extends: .test_deb
   image: registry.ddbuild.io/images/mirror/debian:10.9
+  before_script:
+    - apt-get update
+    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
+
+test_ubuntu_14:
+  extends: .test_deb
+  image: registry.ddbuild.io/images/mirror/ubuntu:14.04
+  variables:
+    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+  before_script:
+    - apt-get update
+    - apt-get install -y debsig-verify
+    # apt-get in Ubuntu 14 doesn't work with local packages
+    - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
+    # rebuild the apt database after installing the package with dpkg
+    - apt-get install -f
+
+test_ubuntu_18:
+  extends: .test_deb
+  image: registry.ddbuild.io/images/mirror/ubuntu:18.04
   before_script:
     - apt-get update
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
@@ -106,7 +133,7 @@ deploy_deb:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
   tags: ["runner:main", "size:large"]
-  needs: ["build_deb", "test_deb_7", "test_deb_10"]
+  needs: ["build_deb", "test_debian_7", "test_debian_10", "test_ubuntu_14", "test_ubuntu_18"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
