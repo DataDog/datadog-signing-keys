@@ -1,4 +1,8 @@
 #!/bin/bash -ex
+# Unless explicitly stated otherwise all files in this repository are licensed
+# under the Apache License Version 2.0.
+# This product includes software developed at Datadog (https://www.datadoghq.com/).
+# Copyright 2021-present Datadog, Inc.
 
 apt_trusted_keyring="/etc/apt/trusted.gpg.d/datadog-archive-keyring.gpg"
 usr_share_keyring="/usr/share/keyrings/datadog-archive-keyring.gpg"
