@@ -21,4 +21,6 @@ build do
 
   copy "files/keyrings/*", keyrings_dir
   copy "files/policies/*", policies_dir
+
+  copy "CHANGELOG.md", install_dir
 end
