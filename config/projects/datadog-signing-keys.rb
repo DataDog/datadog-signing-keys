@@ -32,6 +32,8 @@ description 'Datadog Signing Keys
 
 dependency 'datadog-signing-keys'
 
+runtime_dependency 'gnupg'
+
 exclude '**/.git'
 exclude '**/bundler/git'
 
