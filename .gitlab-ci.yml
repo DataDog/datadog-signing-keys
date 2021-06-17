@@ -1,12 +1,10 @@
 variables:
   DATADOG_AGENT_BUILDERS: v3745210-1e1ec67
   DATADOG_AGENT_BUILDIMAGES: v4164272-bca7bd6
-  DEB_BUCKET_BRANCH: nightly  # 'nightly', 'beta' or 'stable'
   DEB_GPG_KEY_ID: 8387EEAF
   DEB_GPG_KEY_NAME: "Datadog, Inc <package@datadoghq.com>"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
   DEB_SIGNING_PASSPHRASE_SSM_NAME: ci.datadog-agent.deb_signing_key_passphrase_${DEB_GPG_KEY_ID}
-  DEB_S3_DESTINATION: trial  # trial, staging or prod
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
   OMNIBUS_PACKAGE_DIR: $CI_PROJECT_DIR/.omnibus/pkg/
@@ -129,7 +127,7 @@ generate_testing_repo:
     - echo "$DEB_SIGNING_PASSPHRASE" | gpg --armor --sign --detach-sign --local-user "$DEB_GPG_KEY_NAME" --batch --no-tty --passphrase-fd 0 --digest-algo SHA256 -o Release.gpg Release
 
 # Note: The image and upload command here should be kept in sync with those used in the agent-release-management repo
-deploy_deb:
+.deploy:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
   tags: ["runner:main", "size:large"]
@@ -139,9 +137,6 @@ deploy_deb:
   rules:
     - when: manual
   script:
-    - declare -Ar BUCKETS=( ["trial"]="apttrial.datad0g.com" ["staging"]="apt.datad0g.com" ["prod"]="apt.datadoghq.com" )
-    - export DEB_S3_BUCKET=${BUCKETS[$DEB_S3_DESTINATION]}
-
     - *setup_deb_signing_key
     - set +x
 
@@ -152,3 +147,66 @@ deploy_deb:
     - *invalidate_repo
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m main -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
     - *invalidate_repo
+
+deploy_trial_nightly:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "nightly"
+    DEB_S3_BUCKET: "apttrial.datad0g.com"
+    DEB_S3_DESTINATION: "trial"
+
+deploy_trial_beta:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "beta"
+    DEB_S3_BUCKET: "apttrial.datad0g.com"
+    DEB_S3_DESTINATION: "trial"
+
+deploy_trial_stable:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "stable"
+    DEB_S3_BUCKET: "apttrial.datad0g.com"
+    DEB_S3_DESTINATION: "trial"
+
+deploy_staging_nightly:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "nightly"
+    DEB_S3_BUCKET: "apt.datad0g.com"
+    DEB_S3_DESTINATION: "staging"
+
+deploy_staging_beta:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "beta"
+    DEB_S3_BUCKET: "apt.datad0g.com"
+    DEB_S3_DESTINATION: "staging"
+
+deploy_staging_stable:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "stable"
+    DEB_S3_BUCKET: "apt.datad0g.com"
+    DEB_S3_DESTINATION: "staging"
+
+deploy_prod_nightly:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "nightly"
+    DEB_S3_BUCKET: "apt.datadoghq.com"
+    DEB_S3_DESTINATION: "prod"
+
+deploy_prod_beta:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "beta"
+    DEB_S3_BUCKET: "apt.datadoghq.com"
+    DEB_S3_DESTINATION: "prod"
+
+deploy_prod_stable:
+  extends: .deploy
+  variables:
+    DEB_BUCKET_BRANCH: "stable"
+    DEB_S3_BUCKET: "apt.datadoghq.com"
+    DEB_S3_DESTINATION: "prod"
