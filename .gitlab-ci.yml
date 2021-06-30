@@ -189,24 +189,3 @@ deploy_staging_stable:
     DEB_BUCKET_BRANCH: "stable"
     DEB_S3_BUCKET: "apt.datad0g.com"
     DEB_S3_DESTINATION: "staging"
-
-deploy_prod_nightly:
-  extends: .deploy
-  variables:
-    DEB_BUCKET_BRANCH: "nightly"
-    DEB_S3_BUCKET: "apt.datadoghq.com"
-    DEB_S3_DESTINATION: "prod"
-
-deploy_prod_beta:
-  extends: .deploy
-  variables:
-    DEB_BUCKET_BRANCH: "beta"
-    DEB_S3_BUCKET: "apt.datadoghq.com"
-    DEB_S3_DESTINATION: "prod"
-
-deploy_prod_stable:
-  extends: .deploy
-  variables:
-    DEB_BUCKET_BRANCH: "stable"
-    DEB_S3_BUCKET: "apt.datadoghq.com"
-    DEB_S3_DESTINATION: "prod"
