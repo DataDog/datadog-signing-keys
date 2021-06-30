@@ -148,27 +148,6 @@ generate_testing_repo:
     - echo "$DEB_SIGNING_PASSPHRASE" | deb-s3 upload -c $DEB_BUCKET_BRANCH -m main -b $DEB_S3_BUCKET -a all --sign="$DEB_GPG_KEY_ID" --gpg_options="--passphrase-fd 0 --batch --digest-algo SHA512" --preserve_versions --visibility public $OMNIBUS_PACKAGE_DIR/*.deb
     - *invalidate_repo
 
-deploy_trial_nightly:
-  extends: .deploy
-  variables:
-    DEB_BUCKET_BRANCH: "nightly"
-    DEB_S3_BUCKET: "apttrial.datad0g.com"
-    DEB_S3_DESTINATION: "trial"
-
-deploy_trial_beta:
-  extends: .deploy
-  variables:
-    DEB_BUCKET_BRANCH: "beta"
-    DEB_S3_BUCKET: "apttrial.datad0g.com"
-    DEB_S3_DESTINATION: "trial"
-
-deploy_trial_stable:
-  extends: .deploy
-  variables:
-    DEB_BUCKET_BRANCH: "stable"
-    DEB_S3_BUCKET: "apttrial.datad0g.com"
-    DEB_S3_DESTINATION: "trial"
-
 deploy_staging_nightly:
   extends: .deploy
   variables:
