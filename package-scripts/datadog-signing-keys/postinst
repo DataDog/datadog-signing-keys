@@ -33,6 +33,7 @@ fi
 if [ ! -f ${USR_SHARE_KEYRING} ]; then
     touch ${USR_SHARE_KEYRING}
 fi
+chmod a+r ${USR_SHARE_KEYRING}
 
 # We don't carry the keyring as a complete file; if users added different keys
 # to a keyring (perhaps newly rotated keys), we don't want to overwrite these.
@@ -41,7 +42,7 @@ for key in 33EE313BAD9589B7 4B4593018387EEAF; do
 done
 
 if [ "${USE_TRUSTED_GPG_D}" = "true" ] ; then
-    cp ${USR_SHARE_KEYRING} ${TRUSTED_GPG_D_KEYRING}
+    cp -a ${USR_SHARE_KEYRING} ${TRUSTED_GPG_D_KEYRING}
 fi
 
 exit 0
