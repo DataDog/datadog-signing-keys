@@ -1,6 +1,6 @@
 variables:
-  DATADOG_AGENT_BUILDERS: v3745210-1e1ec67
-  DATADOG_AGENT_BUILDIMAGES: v4164272-bca7bd6
+  DATADOG_AGENT_BUILDERS: v6397651-8d03f89
+  DATADOG_AGENT_BUILDIMAGES: v7335571-19a72d1
   DEB_GPG_KEY_ID: 8387EEAF
   DEB_GPG_KEY_NAME: "Datadog, Inc <package@datadoghq.com>"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
