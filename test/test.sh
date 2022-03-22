@@ -5,16 +5,10 @@
 # Copyright 2021-present Datadog, Inc.
 
 apt_trusted_keyring="/etc/apt/trusted.gpg.d/datadog-archive-keyring.gpg"
-usr_share_keyring="/usr/share/keyrings/datadog-archive-keyring.gpg"
-sources_list_file="/etc/apt/sources.list.d/datadog.list"
 
 for i in $(ls -d test/repos/*); do
     repo_path=$(pwd)/${i}
-    if [ "${USE_SIGNED_BY}" = "true" ]; then
-        echo "deb [signed-by=${usr_share_keyring}] file://${repo_path} ./" > ${sources_list_file}
-    else
-        echo "deb file://${repo_path} ./" > ${sources_list_file}
-    fi
+    echo "deb [signed-by=${USR_SHARE_KEYRING}] file://${repo_path} ./" > ${SOURCES_LIST_FILE}
 
     # if apt update passes, we correctly recognized repodata signature
     apt-get update
