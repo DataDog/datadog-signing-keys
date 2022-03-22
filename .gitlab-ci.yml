@@ -164,7 +164,7 @@ generate_testing_repo:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-builders/gitlab_agent_deploy:$DATADOG_AGENT_BUILDERS
   tags: ["runner:main", "size:large"]
-  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by" "test_debian_10_signed_by", "test_debian_10_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_ubuntu_18_signed_by", "test_ubuntu_18_not_signed_by"]
+  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_debian_10_signed_by", "test_debian_10_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_ubuntu_18_signed_by", "test_ubuntu_18_not_signed_by"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
