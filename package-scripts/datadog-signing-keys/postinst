@@ -23,7 +23,14 @@ USE_TRUSTED_GPG_D=true
 DISTRIBUTION_VERSION=$(. /etc/os-release && echo "${VERSION_ID}" | tr "." " " | awk '{ print $1 }')
 
 if { [ "${DISTRIBUTION}" = "Debian" ] && [ "${DISTRIBUTION_VERSION}" -ge "9" ]; } || { [ "${DISTRIBUTION}" = "Ubuntu" ] && [ "${DISTRIBUTION_VERSION}" -ge "16" ]; } ; then
-    USE_TRUSTED_GPG_D=false
+    # We also want to create the /etc/apt/trusted.gpg.d keyring if the system
+    # is not set to use the /usr/share/keyrings/ keyring through signed-by.
+    # This might create the /etc/apt/trusted.gpg.d keyring unnecessarily on
+    # some systems, but it's the only way to be at least somewhat certain
+    # that anyone who installed the package is ok.
+    if grep "signed-by=${USR_SHARE_KEYRING}" /etc/apt/sources.list.d/datadog.list 2>/dev/null 1>/dev/null; then
+        USE_TRUSTED_GPG_D=false
+    fi
 fi
 
 # Always create our keyring at /usr/share/keyring, because the sources list
