@@ -131,7 +131,7 @@ test_ubuntu_18_signed_by:
   variables:
     USE_SIGNED_BY: "true"
 
-test_ubuntu_18_no_signed_by:
+test_ubuntu_18_not_signed_by:
   extends: .test_ubuntu_18
 
 
