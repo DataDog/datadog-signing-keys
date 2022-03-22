@@ -28,7 +28,7 @@ if { [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" = "true" ] || [ -z "${USE_SIGNED_BY}" ]
     exit 1
 fi
 
-if { [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" != "true" ] && [ -n "${USE_SIGNED_BY}" ] } && [ -f ${apt_trusted_keyring} ]; then
+if { [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" != "true" ] && [ -n "${USE_SIGNED_BY}" ]; } && [ -f ${apt_trusted_keyring} ]; then
     echo "${apt_trusted_keyring} exists when it shouldn't"
     exit 1
 fi
