@@ -24,7 +24,7 @@ variables:
   - export DEB_SIGNING_PASSPHRASE=$(aws ssm get-parameter --region us-east-1 --name $DEB_SIGNING_PASSPHRASE_SSM_NAME --with-decryption --query "Parameter.Value" --out text)
 
 .invalidate_repo: &invalidate_repo
-  - cd "$HOME/deploy_scripts/cloudfront-invalidation" && bundle exec ruby invalidate.rb --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable" && cd -
+  - cd "/deploy_scripts/cloudfront-invalidation" && bundle exec ruby invalidate.rb --repo-type apt --env "${DEB_S3_DESTINATION}" --pattern-substring "/${DEB_BUCKET_BRANCH}/" --runner-env "build-stable" && cd -
 
 .test_deb:
   stage: test
