@@ -176,4 +176,4 @@ deploy:
   rules:
     - when: manual
   script:
-    - $S3_CP_CMD --recursive --include "*.deb" $OMNIBUS_PACKAGE_DIR $S3_RELEASE_ARTIFACTS_URI/deb/all/
+    - $S3_CP_CMD --recursive --exclude "*" --include "*.deb" $OMNIBUS_PACKAGE_DIR $S3_RELEASE_ARTIFACTS_URI/deb/all/
