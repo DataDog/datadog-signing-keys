@@ -17,8 +17,10 @@ variables:
   USR_SHARE_KEYRING: /usr/share/keyrings/datadog-archive-keyring.gpg
   DD_LIST_FILE: /etc/apt/sources.list.d/datadog.list
   OPW_LIST_FILE: /etc/apt/sources.list.d/datadog-observability-pipelines-worker.list
+  # Fun note: if you use the same URL in 2 source files once with signed-by and
+  # once without it, some older versions of APT segfault.
   SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://notimportant x y"
-  SOURCE_NO_SIGNED_BY: "deb http://notimportant x y"
+  SOURCE_NO_SIGNED_BY: "deb http://reallynotimportant x y"
 
 .setup_deb_signing_key: &setup_deb_signing_key
   - set +x
@@ -67,7 +69,6 @@ variables:
     - apt-get update
     - if [ "${DD_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
     - if [ "${OPW_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
-    - cat /etc/apt/sources.list.d/*
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
     - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
 
