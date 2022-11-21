@@ -17,8 +17,8 @@ variables:
   USR_SHARE_KEYRING: /usr/share/keyrings/datadog-archive-keyring.gpg
   DD_LIST_FILE: /etc/apt/sources.list.d/datadog.list
   OPW_LIST_FILE: /etc/apt/sources.list.d/datadog-observability-pipelines-worker.list
-  SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y"
-  SOURCE_NO_SIGNED_BY: "deb https://not-important x y"
+  SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://not-important x y"
+  SOURCE_NO_SIGNED_BY: "deb http://not-important x y"
 
 .setup_deb_signing_key: &setup_deb_signing_key
   - set +x
