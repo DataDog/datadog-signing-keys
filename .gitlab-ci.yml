@@ -66,9 +66,9 @@ build_deb:
     ENSURE_TRUSTED_GPG_D_KEYRING: "true"
   before_script:
     # Debian 7 sources are already archived + their Release files are expired
-    - echo -e "deb [allow-insecure=yes] http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
+    - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
     - apt-get update -o Acquire::Check-Valid-Until=false
-    - apt-get install -y debsig-verify
+    - apt-get install -y --allow-unauthenticated debsig-verify
     - if [ "${USE_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${SOURCES_LIST_FILE}; fi
     # apt-get in Debian 7 doesn't work with local packages
     - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
