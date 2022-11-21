@@ -40,6 +40,29 @@ variables:
   extends: .test_deb
   # Unfortunately parallel/matrix doesn't support expansion,
   # so we have to workaround this clumsily
+  parallel:
+    matrix:
+      - ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - DD_LIST: "no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - OPW_LIST: "no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "no-signed"
+        OPW_LIST: "no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - OPW_LIST: "signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - DD_LIST: "signed"
+        OPW_LIST: "no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "no-signed"
+        OPW_LIST: "signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "signed"
+        OPW_LIST: "signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
   before_script:
     - apt-get update
     - if [ "${DD_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
@@ -130,11 +153,6 @@ test_ubuntu_14_not_signed_by:
 test_ubuntu_18:
   extends: .test_deb_new_platforms
   image: registry.ddbuild.io/images/mirror/ubuntu:18.04
-  parallel:
-    matrix:
-      - DD_LIST: ""
-        OPW_LIST: ""
-        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
 
 
 generate_testing_repo:
