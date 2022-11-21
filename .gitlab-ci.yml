@@ -1,5 +1,5 @@
 variables:
-  DATADOG_AGENT_BUILDIMAGES: v7335571-19a72d1
+  DATADOG_AGENT_BUILDIMAGES: v10863649-c23f296
   DEB_GPG_KEY_ID: ad9589b7
   DEB_GPG_KEY_NAME: "Datadog, Inc. Master key"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
@@ -68,7 +68,7 @@ build_deb:
     # Debian 7 sources are already archived + their Release files are expired
     - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
     - apt-get update -o Acquire::Check-Valid-Until=false
-    - apt-get install -y debsig-verify
+    - apt-get install -y --allow-unauthenticated debsig-verify
     - if [ "${USE_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${SOURCES_LIST_FILE}; fi
     # apt-get in Debian 7 doesn't work with local packages
     - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
