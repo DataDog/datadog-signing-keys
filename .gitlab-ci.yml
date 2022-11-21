@@ -38,39 +38,41 @@ variables:
 # /etc/apt/trusted.gpg.d keyring existence in various scenarios
 .test_deb_new_platforms:
   extends: .test_deb
+  # Unfortunately parallel/matrix doesn't support expansion,
+  # so we have to workaround this clumsily
   parallel:
     matrix:
       - DD_LIST: ""
         OPW_LIST: ""
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-      - DD_LIST: "${SOURCE_NO_SIGNED_BY}"
+      - DD_LIST: "no-signed"
         OPW_LIST: ""
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
       - DD_LIST: ""
-        OPW_LIST: "${SOURCE_NO_SIGNED_BY}"
+        OPW_LIST: "no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "${SOURCE_NO_SIGNED_BY}"
-        OPW_LIST: "${SOURCE_NO_SIGNED_BY}"
+      - DD_LIST: "no-signed"
+        OPW_LIST: "no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "${SOURCE_SIGNED_BY}"
+      - DD_LIST: "signed"
         OPW_LIST: ""
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
       - DD_LIST: ""
-        OPW_LIST: "${SOURCE_SIGNED_BY}"
+        OPW_LIST: "signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-      - DD_LIST: "${SOURCE_SIGNED_BY}"
-        OPW_LIST: "${SOURCE_NO_SIGNED_BY}"
+      - DD_LIST: "signed"
+        OPW_LIST: "no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "${SOURCE_NO_SIGNED_BY}"
-        OPW_LIST: "${SOURCE_SIGNED_BY}"
+      - DD_LIST: "no-signed"
+        OPW_LIST: "signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "${SOURCE_SIGNED_BY}"
-        OPW_LIST: "${SOURCE_SIGNED_BY}"
+      - DD_LIST: "signed"
+        OPW_LIST: "signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
   before_script:
     - apt-get update
-    - if [ -n "${DD_LIST}" ]; then echo "$DD_LIST" > ${DD_LIST_FILE}; fi
-    - if [ -n "${OPW_LIST}" ]; then echo "$OPW_LIST" > ${OPW_LIST_FILE}; fi
+    - if [ "${DD_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
+    - if [ "${OPW_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
     - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
 
