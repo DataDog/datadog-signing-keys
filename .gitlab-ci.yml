@@ -44,7 +44,7 @@ variables:
   # so we have to workaround this clumsily
   parallel:
     matrix:
-      - ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - ENSURE_TRUSTED_GPG_D_KEYRING: "true"
       - DD_LIST: "no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
       - OPW_LIST: "no-signed"

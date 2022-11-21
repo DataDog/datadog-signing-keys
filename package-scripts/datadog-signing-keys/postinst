@@ -43,6 +43,11 @@ if { [ "${DISTRIBUTION}" = "Debian" ] && [ "${DISTRIBUTION_VERSION}" -ge "9" ]; 
     if [ "${DD_LIST_SIGNED_BY}" = "true" ] && [ "${OPW_LIST_SIGNED_BY}" = "true" ]; then
         USE_TRUSTED_GPG_D=false
     fi
+
+    # See https://github.com/DataDog/datadog-signing-keys/pull/27#discussion_r1028474944
+    if [ ! -e "${DD_SOURCE_LIST}" ] && [ ! -e "${OPW_SOURCE_LIST}" ]; then
+        USE_TRUSTED_GPG_D=true
+    fi
 fi
 
 # Always create our keyring at /usr/share/keyring, because the sources list
