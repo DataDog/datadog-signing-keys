@@ -39,8 +39,6 @@ if { [ "${DISTRIBUTION}" = "Debian" ] && [ "${DISTRIBUTION_VERSION}" -ge "9" ]; 
     if [ ! -e "${OPW_SOURCE_LIST}" ] || grep "signed-by=${USR_SHARE_KEYRING}" "${OPW_SOURCE_LIST}" 2>/dev/null 1>/dev/null; then
         OPW_LIST_SIGNED_BY=true
     fi
-    echo "${DD_LIST_SIGNED_BY}"
-    echo "${OPW_LIST_SIGNED_BY}"
 
     if [ "${DD_LIST_SIGNED_BY}" = "true" ] && [ "${OPW_LIST_SIGNED_BY}" = "true" ]; then
         USE_TRUSTED_GPG_D=false
