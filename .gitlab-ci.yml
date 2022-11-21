@@ -67,6 +67,7 @@ variables:
     - apt-get update
     - if [ "${DD_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
     - if [ "${OPW_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
+    - cat /etc/apt/sources.list.d/*
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
     - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
 
