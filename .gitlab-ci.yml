@@ -1,5 +1,5 @@
 variables:
-  DATADOG_AGENT_BUILDIMAGES: v7335571-19a72d1
+  DATADOG_AGENT_BUILDIMAGES: v10863649-c23f296
   DEB_GPG_KEY_ID: ad9589b7
   DEB_GPG_KEY_NAME: "Datadog, Inc. Master key"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
