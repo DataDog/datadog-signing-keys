@@ -1,3 +1,8 @@
+# 1.2.0 / 2022-11-22
+
+* Respect `/etc/apt/sources.list.d/datadog-observability-pipelines-worker.list`
+  source list file when creating the keyring `/etc/apt/trusted.gpg.d`.
+
 # 1.1.0 / 2022-03-22
 
 * Always create `/etc/apt/trusted.gpg.d/datadog-archive-keyring.gpg`, unless
