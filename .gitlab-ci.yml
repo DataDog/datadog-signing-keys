@@ -42,33 +42,36 @@ variables:
   extends: .test_deb
   # Unfortunately parallel/matrix doesn't support expansion,
   # so we have to workaround this clumsily
+  # Also, to make it possible to have needs on this job, the values
+  # for "DD_LIST" and "OPW_LIST" have to be dd-no-signed and opw-no-signed
+  # so that the generated matrix job names would be unique
   parallel:
     matrix:
       - ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "no-signed"
+      - DD_LIST: "dd-no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - OPW_LIST: "no-signed"
+      - OPW_LIST: "opw-no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "no-signed"
-        OPW_LIST: "no-signed"
+      - DD_LIST: "dd-no-signed"
+        OPW_LIST: "opw-no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "signed"
+      - DD_LIST: "dd-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-      - OPW_LIST: "signed"
+      - OPW_LIST: "opw-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-      - DD_LIST: "signed"
-        OPW_LIST: "no-signed"
+      - DD_LIST: "dd-signed"
+        OPW_LIST: "opw-no-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "no-signed"
-        OPW_LIST: "signed"
+      - DD_LIST: "dd-no-signed"
+        OPW_LIST: "opw-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "signed"
-        OPW_LIST: "signed"
+      - DD_LIST: "dd-signed"
+        OPW_LIST: "opw-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
   before_script:
     - apt-get update
-    - if [ "${DD_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
-    - if [ "${OPW_LIST}" = "signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
+    - if [ "${DD_LIST}" = "dd-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "dd-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
+    - if [ "${OPW_LIST}" = "opw-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "opw-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
     - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
     - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
 
@@ -185,8 +188,7 @@ deploy:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
   tags: ["runner:main", "size:large"]
-  # NOTE: for now, needs can't be used to depend on matrix jobs
-  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by"]
+  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_debian_10", "test_ubuntu_18"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
