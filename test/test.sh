@@ -8,7 +8,7 @@ apt_trusted_keyring="/etc/apt/trusted.gpg.d/datadog-archive-keyring.gpg"
 
 for i in $(ls -d test/repos/*); do
     repo_path=$(pwd)/${i}
-    echo "deb [signed-by=${USR_SHARE_KEYRING}] file://${repo_path} ./" > ${SOURCES_LIST_FILE}
+    echo "deb [signed-by=${USR_SHARE_KEYRING}] file://${repo_path} ./" > ${DD_LIST_FILE}
 
     # if apt update passes, we correctly recognized repodata signature
     apt-get update
@@ -17,12 +17,12 @@ for i in $(ls -d test/repos/*); do
     debsig-verify ${repo_path}/datadog-signing-keys*.deb
 done
 
-if { [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" = "true" ] || [ -z "${USE_SIGNED_BY}" ]; } && [ ! -f ${apt_trusted_keyring} ]; then
+if [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" = "true" ] && [ ! -f ${apt_trusted_keyring} ]; then
     echo "${apt_trusted_keyring} doesn't exist when it should"
     exit 1
 fi
 
-if { [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" != "true" ] && [ -n "${USE_SIGNED_BY}" ]; } && [ -f ${apt_trusted_keyring} ]; then
+if [ "${ENSURE_TRUSTED_GPG_D_KEYRING}" != "true" ] && [ -f ${apt_trusted_keyring} ]; then
     echo "${apt_trusted_keyring} exists when it shouldn't"
     exit 1
 fi

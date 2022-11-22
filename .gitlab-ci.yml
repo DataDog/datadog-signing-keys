@@ -15,7 +15,12 @@ variables:
   S3_RELEASE_ARTIFACTS_URI: s3://dd-release-artifacts/$CI_PROJECT_NAME/$CI_PIPELINE_ID
   TESTING_REPO_DIR: ./testing-repo-dir
   USR_SHARE_KEYRING: /usr/share/keyrings/datadog-archive-keyring.gpg
-  SOURCES_LIST_FILE: /etc/apt/sources.list.d/datadog.list
+  DD_LIST_FILE: /etc/apt/sources.list.d/datadog.list
+  OPW_LIST_FILE: /etc/apt/sources.list.d/datadog-observability-pipelines-worker.list
+  # Fun note: if you use the same URL in 2 source files once with signed-by and
+  # once without it, some older versions of APT segfault.
+  SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://notimportant x y"
+  SOURCE_NO_SIGNED_BY: "deb http://reallynotimportant x y"
 
 .setup_deb_signing_key: &setup_deb_signing_key
   - set +x
@@ -30,6 +35,45 @@ variables:
     # ensure that apt-get update in test script doesn't fail because of problems with other sources
     - echo "" > /etc/apt/sources.list
     - test/test.sh
+
+# For Debian >= 9/Ubuntu >= 16 where we do additional testing for
+# /etc/apt/trusted.gpg.d keyring existence in various scenarios
+.test_deb_new_platforms:
+  extends: .test_deb
+  # Unfortunately parallel/matrix doesn't support expansion,
+  # so we have to workaround this clumsily
+  # Also, to make it possible to have needs on this job, the values
+  # for "DD_LIST" and "OPW_LIST" have to be dd-no-signed and opw-no-signed
+  # so that the generated matrix job names would be unique
+  parallel:
+    matrix:
+      - ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - OPW_LIST: "opw-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-no-signed"
+        OPW_LIST: "opw-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - OPW_LIST: "opw-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - DD_LIST: "dd-signed"
+        OPW_LIST: "opw-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-no-signed"
+        OPW_LIST: "opw-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-signed"
+        OPW_LIST: "opw-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+  before_script:
+    - apt-get update
+    - if [ "${DD_LIST}" = "dd-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "dd-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
+    - if [ "${OPW_LIST}" = "opw-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "opw-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
+    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
+    - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
 
 stages:
   - build
@@ -69,37 +113,24 @@ build_deb:
     - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
     - apt-get update -o Acquire::Check-Valid-Until=false
     - apt-get install -y --allow-unauthenticated debsig-verify
-    - if [ "${USE_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${SOURCES_LIST_FILE}; fi
+    - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
     # apt-get in Debian 7 doesn't work with local packages
     - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
-    - rm -f ${SOURCES_LIST_FILE}
+    - rm -f ${DD_LIST_FILE}
     # rebuild the apt database after installing the package with dpkg
     - apt-get install -f
 
 test_debian_7_signed_by:
   extends: .test_debian_7
   variables:
-    USE_SIGNED_BY: "true"
+    DD_LIST_SIGNED_BY: "true"
 
 test_debian_7_not_signed_by:
   extends: .test_debian_7
 
-.test_debian_10:
-  extends: .test_deb
+test_debian_10:
+  extends: .test_deb_new_platforms
   image: registry.ddbuild.io/images/mirror/debian:10.9
-  before_script:
-    - apt-get update
-    - if [ "${USE_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${SOURCES_LIST_FILE}; fi
-    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
-    - rm -f ${SOURCES_LIST_FILE}
-
-test_debian_10_signed_by:
-  extends: .test_debian_10
-  variables:
-    USE_SIGNED_BY: "true"
-
-test_debian_10_not_signed_by:
-  extends: .test_debian_10
 
 .test_ubuntu_14:
   extends: .test_deb
@@ -110,36 +141,23 @@ test_debian_10_not_signed_by:
     - apt-get update
     - apt-get install -y debsig-verify
     # apt-get in Ubuntu 14 doesn't work with local packages
-    - if [ "${USE_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${SOURCES_LIST_FILE}; fi
+    - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
     - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
-    - rm -f ${SOURCES_LIST_FILE}
+    - rm -f ${DD_LIST_FILE}
     # rebuild the apt database after installing the package with dpkg
     - apt-get install -f
 
 test_ubuntu_14_signed_by:
   extends: .test_ubuntu_14
   variables:
-    USE_SIGNED_BY: "true"
+    DD_LIST_SIGNED_BY: "true"
 
 test_ubuntu_14_not_signed_by:
   extends: .test_ubuntu_14
 
-.test_ubuntu_18:
-  extends: .test_deb
+test_ubuntu_18:
+  extends: .test_deb_new_platforms
   image: registry.ddbuild.io/images/mirror/ubuntu:18.04
-  before_script:
-    - apt-get update
-    - if [ "${USE_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${SOURCES_LIST_FILE}; fi
-    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
-    - rm -f ${SOURCES_LIST_FILE}
-
-test_ubuntu_18_signed_by:
-  extends: .test_ubuntu_18
-  variables:
-    USE_SIGNED_BY: "true"
-
-test_ubuntu_18_not_signed_by:
-  extends: .test_ubuntu_18
 
 
 generate_testing_repo:
@@ -170,7 +188,7 @@ deploy:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
   tags: ["runner:main", "size:large"]
-  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_debian_10_signed_by", "test_debian_10_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_ubuntu_18_signed_by", "test_ubuntu_18_not_signed_by"]
+  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_debian_10", "test_ubuntu_18"]
   before_script:
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
