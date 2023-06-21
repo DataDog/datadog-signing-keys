@@ -1,5 +1,7 @@
 variables:
-  DATADOG_AGENT_BUILDIMAGES: v10863649-c23f296
+  #Do not change this - must be the repository name for Kubernetes runners to work
+  KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: "datadog-signing-keys"
+  DATADOG_AGENT_BUILDIMAGES: v17005759-4ac551d
   DEB_GPG_KEY_ID: ad9589b7
   DEB_GPG_KEY_NAME: "Datadog, Inc. Master key"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
@@ -30,7 +32,9 @@ variables:
 
 .test_deb:
   stage: test
-  tags: ["runner:main", "size:large"]
+  tags: [arch:amd64]
+  before_script:
+    - source /root/.bashrc
   script:
     # ensure that apt-get update in test script doesn't fail because of problems with other sources
     - echo "" > /etc/apt/sources.list
@@ -83,11 +87,13 @@ stages:
 build_deb:
   stage: build
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: ["runner:main", "size:large"]
+  tags: [arch:amd64]
   artifacts:
     expire_in: 2 weeks
     paths:
       - $OMNIBUS_PACKAGE_DIR
+  before_script:
+    - source /root/.bashrc
   script:
     - bundle install
     - *setup_deb_signing_key
@@ -166,13 +172,15 @@ generate_testing_repo:
   # this pipeline run and the repodata will also be signed with the same key.
   stage: test
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: ["runner:main", "size:large"]
+  tags: [arch:amd64]
   rules:
     - when: manual
   artifacts:
     expire_in: 1 day
     paths:
       - $TESTING_REPO_DIR
+  before_script:
+    - source /root/.bashrc
   script:
     - apt-get install -y apt-utils  # to get apt-ftparchive
     - *setup_deb_signing_key
@@ -187,9 +195,10 @@ generate_testing_repo:
 deploy:
   stage: deploy
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: ["runner:main", "size:large"]
+  tags: [arch:amd64]
   needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_debian_10", "test_ubuntu_18"]
   before_script:
+    - source /root/.bashrc
     - ls $OMNIBUS_PACKAGE_DIR
   rules:
     - when: manual
