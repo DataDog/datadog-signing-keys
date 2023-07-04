@@ -1,3 +1,7 @@
+# 1.3.0 / 2023-07-04
+ 
+* Add new signing key for 2024 key rotation
+
 # 1.2.0 / 2022-11-22
 
 * Respect `/etc/apt/sources.list.d/datadog-observability-pipelines-worker.list`
