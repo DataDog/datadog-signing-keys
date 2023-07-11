@@ -101,7 +101,7 @@ build_deb:
     - $S3_CP_CMD $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb $S3_ARTIFACTS_URI/$DESTINATION_DEB
     - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
 
-### Testing notes 
+### Testing notes
 # debsig-verify on Debian 7.11/Ubuntu 14.04 requires policy files to have
 # Policy xmlns start with "http://", not "https://"; to ensure this works
 # fine, we include two policy files per key and we test on Debian 7/Ubuntu 14
@@ -173,8 +173,7 @@ generate_testing_repo:
   stage: test
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
   tags: [arch:amd64]
-  rules:
-    - when: manual
+  when: manual
   artifacts:
     expire_in: 1 day
     paths:
@@ -200,7 +199,6 @@ deploy:
   before_script:
     - source /root/.bashrc
     - ls $OMNIBUS_PACKAGE_DIR
-  rules:
-    - when: manual
+  when: manual
   script:
     - $S3_CP_CMD --recursive --exclude "*" --include "*.deb" $OMNIBUS_PACKAGE_DIR $S3_RELEASE_ARTIFACTS_URI/deb/all/
