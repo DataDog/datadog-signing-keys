@@ -1,3 +1,7 @@
+# 1.3.1 / 2023-07-18
+ 
+* Correctly embeds the new signing key (that was not shipped in 1.3.0)
+
 # 1.3.0 / 2023-07-04
  
 * Add new signing key for 2024 key rotation
