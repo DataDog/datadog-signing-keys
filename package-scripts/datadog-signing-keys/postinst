@@ -61,7 +61,7 @@ chmod a+r ${USR_SHARE_KEYRING}
 
 # We don't carry the keyring as a complete file; if users added different keys
 # to a keyring (perhaps newly rotated keys), we don't want to overwrite these.
-for key in E6266D4AC0962C7D 33EE313BAD9589B7 4B4593018387EEAF; do
+for key in 0D826EB906462314 E6266D4AC0962C7D 33EE313BAD9589B7 4B4593018387EEAF; do
     cat "${DEBSIG_KEYRINGS}/${key}/debsig.gpg" | gpg -q --no-default-keyring --keyring ${USR_SHARE_KEYRING} --import --batch
 done
 
