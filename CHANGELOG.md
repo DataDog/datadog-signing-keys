@@ -1,3 +1,7 @@
+# 1.4.0 / 2024-08-27
+ 
+* Rotate package signing keys (2024 key rotation)
+
 # 1.3.1 / 2023-07-18
  
 * Correctly embeds the new signing key (that was not shipped in 1.3.0)
