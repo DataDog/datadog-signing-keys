@@ -6,7 +6,7 @@
 # Modify this when adding/removing keys; also modify postinst script to add
 # the new key to the APT keyring (I didn't find a reasonable way to make
 # postinst script an omnibus template to render these in).
-keys = ['E6266D4AC0962C7D', '33EE313BAD9589B7', '4B4593018387EEAF']
+keys = ['E6266D4AC0962C7D', '33EE313BAD9589B7', '4B4593018387EEAF', '0D826EB906462314']
 
 name 'datadog-signing-keys'
 maintainer 'Datadog Packages <package@datadoghq.com>'
