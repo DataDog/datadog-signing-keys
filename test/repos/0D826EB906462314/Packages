@@ -4,13 +4,14 @@ Section: utils
 Installed-Size: 23
 Maintainer: Datadog Packages <package@datadoghq.com>
 Architecture: all
-Version: 1:0.1.0~5~g37aafec-1
-Filename: ./datadog-signing-keys_0.1.0~5~g37aafec-1_all.deb
-Size: 29960
-MD5sum: 78fa1811f610c580cd802fceba7ac13a
-SHA1: a12a3180749b5b33b25a4d03d41d9545a227bdf3
-SHA256: 2d85181a88d433d0eb84379e5bf81888b698d6d47de3fc3989a5f565fe65b9a8
-SHA512: 71b6f48aa172530a79b267a786c4e3ff129128c70df5c39d29a74ca04f13a70ea5a53a1e4bf8e61a2ed6c374258867d53f16f5c2c09b974d491e2039a8c975b3
+Version: 1:1.4.0~1~g2325831-1
+Depends: gnupg
+Filename: ./datadog-signing-keys_1.4.0~1~g2325831-1_all.deb
+Size: 23818
+MD5sum: 9c8c0a1c1c43b445403ab38dfdc8a59a
+SHA1: c09c2ca4d9e2ca9583c4fb81197d8c032b65eff0
+SHA256: 190691aabbe65115dc98af4161a980c6d26fd3fe5fcb5973ccca4beed74bfc98
+SHA512: 9f21ba8d736a2a99125f4e5a3e1be158c00c60d7e6eb0061b067afa40cdbfc64604f4c3cd555e8e1332a7effffc63984bad4a4e4a92f4325919384faf60b2fef
 Description: Datadog Signing Keys
   The datadog-signing-keys package carries currently active public signing
   keys that Datadog uses to sign APT repository metadata and DEB packages.
