@@ -2,7 +2,7 @@ variables:
   #Do not change this - must be the repository name for Kubernetes runners to work
   KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: "datadog-signing-keys"
   DATADOG_AGENT_BUILDIMAGES: v29737258-e0e63b8a
-  DEB_GPG_KEY_ID: c0962c7d
+  DEB_GPG_KEY_ID: "06462314"
   DEB_GPG_KEY_NAME: "Datadog, Inc. APT key"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
   DEB_SIGNING_PASSPHRASE_SSM_NAME: ci.datadog-agent.deb_signing_key_passphrase_${DEB_GPG_KEY_ID}
