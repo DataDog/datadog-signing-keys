@@ -27,7 +27,20 @@ variables:
   SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://notimportant x y"
   SOURCE_NO_SIGNED_BY: "deb http://reallynotimportant x y"
   INTERNAL_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci
-  RELEASE_VERSION_DEPLOY: $CI_COMMIT_TAG
+  VERSION: 1.4.0
+  RELEASE_VERSION_STABLE: $CI_COMMIT_TAG
+  RELEASE_VERSION_BETA: $VERSION-pipeline.$CI_PIPELINE_ID.beta.$CI_COMMIT_SHORT_SHA
+  RELEASE_VERSION_BETA_DEPLOY: $VERSION~pipeline.$CI_PIPELINE_ID.beta.$CI_COMMIT_SHORT_SHA
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      variables:
+        PACKAGE_VERSION: $RELEASE_VERSION_STABLE
+        RELEASE_VERSION_DEPLOY: $RELEASE_VERSION_STABLE
+    - variables:
+        PACKAGE_VERSION: $RELEASE_VERSION_BETA
+        RELEASE_VERSION_DEPLOY: $RELEASE_VERSION_BETA_DEPLOY
 
 stages:
   - build
