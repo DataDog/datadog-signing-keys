@@ -1,0 +1,109 @@
+---
+.test_deb:
+  stage: test
+  tags: [arch:amd64]
+  before_script:
+    - apt-get update
+    - apt-get install -y apt-transport-https ca-certificates gnupg curl
+    - install -o root -g root -m 644 /dev/null /usr/share/keyrings/datadog-archive-keyring.gpg
+    - curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | gpg --dearmor -o /usr/share/keyrings/datadog-archive-keyring.gpg
+    - echo "deb [signed-by=/usr/share/keyrings/datadog-archive-keyring.gpg] https://apttesting.datad0g.com/ stable main" > /etc/apt/sources.list.d/datadog.list
+    - apt-get update
+    - apt-get install -y debsig-verify datadog-signing-keys
+  script:
+    - test/test.sh
+
+.test_deb_new_platforms:
+  extends: .test_deb
+  parallel:
+    matrix:
+      - ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - OPW_LIST: "opw-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-no-signed"
+        OPW_LIST: "opw-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - OPW_LIST: "opw-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+      - DD_LIST: "dd-signed"
+        OPW_LIST: "opw-no-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-no-signed"
+        OPW_LIST: "opw-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+      - DD_LIST: "dd-signed"
+        OPW_LIST: "opw-signed"
+        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
+  before_script:
+    - apt-get update
+    - apt-get install -y apt-transport-https ca-certificates gnupg curl
+    - install -o root -g root -m 644 /dev/null /usr/share/keyrings/datadog-archive-keyring.gpg
+    - curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | gpg --dearmor -o /usr/share/keyrings/datadog-archive-keyring.gpg
+    - |
+      # Create the appropriate sources.list entries based on variables
+      if [ "${DD_LIST}" = "dd-signed" ]; then
+        echo "deb [signed-by=/usr/share/keyrings/datadog-archive-keyring.gpg] https://apttesting.datad0g.com/ stable main" > ${DD_LIST_FILE}
+      elif [ "${DD_LIST}" = "dd-no-signed" ]; then
+        echo "deb https://apttesting.datad0g.com/ stable main" > ${DD_LIST_FILE}
+      fi
+      if [ "${OPW_LIST}" = "opw-signed" ]; then
+        echo "deb [signed-by=/usr/share/keyrings/datadog-archive-keyring.gpg] https://apttesting.datad0g.com/ stable 6" > ${OPW_LIST_FILE}
+      elif [ "${OPW_LIST}" = "opw-no-signed" ]; then
+        echo "deb https://apttesting.datad0g.com/ stable 6" > ${OPW_LIST_FILE}
+      fi
+    - apt-get update
+    - apt-get install -y debsig-verify datadog-signing-keys
+    - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
+
+test_debian_7_signed_by:
+  extends: .test_deb
+  image: registry.ddbuild.io/images/mirror/debian:7.11
+  variables:
+    DD_LIST_SIGNED_BY: "true"
+    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+  before_script:
+    - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
+    - apt-get update -o Acquire::Check-Valid-Until=false
+    - apt-get install -y --allow-unauthenticated apt-transport-https ca-certificates gnupg curl debsig-verify
+    - curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | apt-key add -
+    - |
+      if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then
+        echo "deb [signed-by=/etc/apt/trusted.gpg] https://apttesting.datad0g.com/ stable main" > ${DD_LIST_FILE}
+      else
+        echo "deb https://apttesting.datad0g.com/ stable main" > ${DD_LIST_FILE}
+      fi
+    - apt-get update -o Acquire::Check-Valid-Until=false
+    - apt-get install -y datadog-signing-keys
+    - rm -f ${DD_LIST_FILE}
+
+test_ubuntu_14_signed_by:
+  extends: .test_deb
+  image: registry.ddbuild.io/images/mirror/ubuntu:14.04
+  variables:
+    DD_LIST_SIGNED_BY: "true"
+    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
+  before_script:
+    - apt-get update
+    - apt-get install -y apt-transport-https ca-certificates gnupg curl debsig-verify
+    - curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | apt-key add -
+    - |
+      if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then
+        echo "deb [signed-by=/etc/apt/trusted.gpg] https://apttesting.datad0g.com/ stable main" > ${DD_LIST_FILE}
+      else
+        echo "deb https://apttesting.datad0g.com/ stable main" > ${DD_LIST_FILE}
+      fi
+    - apt-get update
+    - apt-get install -y datadog-signing-keys
+    - rm -f ${DD_LIST_FILE}
+
+test_debian_10:
+  extends: .test_deb_new_platforms
+  image: registry.ddbuild.io/images/mirror/debian:10.9
+
+test_ubuntu_18:
+  extends: .test_deb_new_platforms
+  image: registry.ddbuild.io/images/mirror/ubuntu:18.04

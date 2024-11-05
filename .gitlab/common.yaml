@@ -1,0 +1,33 @@
+---
+# Base job template for package release
+.package-promotion-template:
+  stage: promote
+  image: $INTERNAL_REGISTRY/datadog-agent-buildimages/gitlab_agent_deploy:$DATADOG_AGENT_BUILDIMAGES
+  tags: ["arch:amd64"]
+  needs:
+    - job: upload-linux-packages
+      artifacts: false
+  before_script:
+    - export GITLAB_TOKEN=${CI_JOB_TOKEN}
+    - export DD_PKG_ARCH=x86_64
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      when: manual
+  allow_failure: true
+  script:
+    - OPTIONAL_FLAGS=""
+    - |
+      if [ "$AUTO_RELEASE" = "true" ]; then
+        OPTIONAL_FLAGS+="--auto-release "
+      fi
+      if [ "$FOLLOW" = "true" ]; then
+        export GITLAB_TOKEN=$(vault kv get -field=project-token kv/k8s/gitlab-runner/datadog-signing-keys/agent-release-management-read-token)
+        OPTIONAL_FLAGS+="--follow"
+      fi
+    - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
+    - dd-pkg promote
+      --release-product "${PRODUCT_NAME}"
+      --release-version "${RELEASE_VERSION_DEPLOY}"-1
+      --target-repo ${TARGET_REPO}
+      --target-channel ${TARGET_CHANNEL}
+      $OPTIONAL_FLAGS
