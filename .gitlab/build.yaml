@@ -13,7 +13,7 @@ build_deb:
     - source /root/.bashrc
   script:
     - bundle install
-    - PACKAGE_VERSION=${PACKAGE_VERSION_OVERRIDE:-$(git describe --tags)} bundle exec omnibus build ${PROJECT_NAME} --override=base_dir:${OMNIBUS_BASE_DIR}
+    - PACKAGE_VERSION=${PACKAGE_VERSION_OVERRIDE:-$RELEASE_VERSION_DEPLOY} bundle exec omnibus build ${PROJECT_NAME} --override=base_dir:${OMNIBUS_BASE_DIR}
     - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
     - !reference [.create-signature-and-lint-packages]
 
