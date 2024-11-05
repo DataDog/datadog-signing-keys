@@ -45,10 +45,10 @@
     - apt-get update
     - if [ "${DD_LIST}" = "dd-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "dd-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
     - if [ "${OPW_LIST}" = "opw-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "opw-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
-    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} datadog main" > /etc/apt/sources.list.d/datadog-signing-keys.list
+    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} datadog main" > ${SIGNING_KEYS_FILE}
     - apt-get update
     - apt-get install -y datadog-signing-keys debsig-verify
-    - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
+    - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE} ${SIGNING_KEYS_FILE}
 
 ### Testing notes
 # debsig-verify on Debian 7.11/Ubuntu 14.04 requires policy files to have
@@ -69,10 +69,10 @@
     - apt-get update -o Acquire::Check-Valid-Until=false
     - apt-get install -y --allow-unauthenticated debsig-verify
     - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
-    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} datadog main" > /etc/apt/sources.list.d/datadog-signing-keys.list
+    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} datadog main" > ${SIGNING_KEYS_FILE}
     - apt-get update -o Acquire::Check-Valid-Until=false
     - apt-get install -y datadog-signing-keys
-    - rm -f ${DD_LIST_FILE}
+    - rm -f ${DD_LIST_FILE} ${SIGNING_KEYS_FILE}
     # rebuild the apt database after installing the package
     - apt-get install -f
 
@@ -97,10 +97,10 @@ test_debian_10:
     - apt-get update
     - apt-get install -y debsig-verify
     - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
-    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} datadog main" > /etc/apt/sources.list.d/datadog-signing-keys.list
+    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} datadog main" > ${SIGNING_KEYS_FILE}
     - apt-get update
     - apt-get install -y datadog-signing-keys
-    - rm -f ${DD_LIST_FILE}
+    - rm -f ${DD_LIST_FILE} ${SIGNING_KEYS_FILE}
     # rebuild the apt database after installing the package
     - apt-get install -f
 

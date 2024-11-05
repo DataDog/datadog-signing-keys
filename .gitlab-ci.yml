@@ -21,6 +21,7 @@ variables:
   USR_SHARE_KEYRING: /usr/share/keyrings/datadog-archive-keyring.gpg
   DD_LIST_FILE: /etc/apt/sources.list.d/datadog.list
   OPW_LIST_FILE: /etc/apt/sources.list.d/datadog-observability-pipelines-worker.list
+  SIGNING_KEYS_FILE: /etc/apt/sources.list.d/datadog-signing-keys.list
   # Fun note: if you use the same URL in 2 source files once with signed-by and
   # once without it, some older versions of APT segfault.
   SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://notimportant x y"
