@@ -26,6 +26,7 @@ variables:
   SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://notimportant x y"
   SOURCE_NO_SIGNED_BY: "deb http://reallynotimportant x y"
   INTERNAL_REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci
+  RELEASE_VERSION_DEPLOY: $CI_COMMIT_TAG
 
 stages:
   - build
