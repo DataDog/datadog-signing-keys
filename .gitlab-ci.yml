@@ -1,5 +1,5 @@
 variables:
-  CI_IMAGE_DEB_X64: v47046711-76471b8e
+  CI_IMAGE_DEB_X64: v47979770-a5a4cfd0
   DEB_GPG_KEY_ID: c0962c7d
   DEB_GPG_KEY_NAME: "Datadog, Inc. APT key"  # used by config/projects/datadog-signing-keys.rb
   DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
@@ -84,7 +84,7 @@ stages:
 
 build_deb:
   stage: build
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
   tags: [arch:amd64]
   artifacts:
     expire_in: 2 weeks
@@ -169,7 +169,7 @@ generate_testing_repo:
   # will contain the datadog-signing-keys package singed with the key used in
   # this pipeline run and the repodata will also be signed with the same key.
   stage: test
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
   tags: [arch:amd64]
   when: manual
   artifacts:
@@ -191,7 +191,7 @@ generate_testing_repo:
 
 deploy:
   stage: deploy
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
   tags: [arch:amd64]
   needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_debian_10", "test_ubuntu_18"]
   before_script:
