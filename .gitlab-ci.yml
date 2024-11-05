@@ -1,21 +1,23 @@
+---
+include:
+  - /.gitlab/build.yaml
+  - /.gitlab/common.yaml
+  - /.gitlab/upload.yaml
+  - /.gitlab/promote_testing.yaml
+  - /.gitlab/test.yaml
+  - /.gitlab/promote.yaml
+
 variables:
   #Do not change this - must be the repository name for Kubernetes runners to work
   KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: "datadog-signing-keys"
-  DATADOG_AGENT_BUILDIMAGES: v29737258-e0e63b8a
-  DEB_GPG_KEY_ID: c0962c7d
-  DEB_GPG_KEY_NAME: "Datadog, Inc. APT key"  # used by config/projects/datadog-signing-keys.rb
-  DEB_GPG_KEY_SSM_NAME: ci.datadog-agent.deb_signing_private_key_${DEB_GPG_KEY_ID}
-  DEB_SIGNING_PASSPHRASE_SSM_NAME: ci.datadog-agent.deb_signing_key_passphrase_${DEB_GPG_KEY_ID}
+  DATADOG_AGENT_BUILDIMAGES: v47979770-a5a4cfd0
+  DD_PKG_VERSION: latest
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
   OMNIBUS_PACKAGE_DIR: $CI_PROJECT_DIR/.omnibus/pkg/
   PACKAGE_VERSION_OVERRIDE: ""
+  PIPELINE_KEY_ALIAS: "alias/ci_datadog-signing-keys_pipeline-key"
   PROJECT_NAME: datadog-signing-keys
-  S3_ARTIFACTS_URI: s3://dd-ci-artefacts-build-stable/$CI_PROJECT_NAME/$CI_PIPELINE_ID
-  S3_CP_OPTIONS: --only-show-errors --region us-east-1 --sse AES256
-  S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
-  S3_RELEASE_ARTIFACTS_URI: s3://dd-release-artifacts/$CI_PROJECT_NAME/$CI_PIPELINE_ID
-  TESTING_REPO_DIR: ./testing-repo-dir
   USR_SHARE_KEYRING: /usr/share/keyrings/datadog-archive-keyring.gpg
   DD_LIST_FILE: /etc/apt/sources.list.d/datadog.list
   OPW_LIST_FILE: /etc/apt/sources.list.d/datadog-observability-pipelines-worker.list
@@ -24,181 +26,9 @@ variables:
   SOURCE_SIGNED_BY: "deb [signed-by=${USR_SHARE_KEYRING}] http://notimportant x y"
   SOURCE_NO_SIGNED_BY: "deb http://reallynotimportant x y"
 
-.setup_deb_signing_key: &setup_deb_signing_key
-  - set +x
-  - DEB_GPG_KEY=$(aws ssm get-parameter --region us-east-1 --name $DEB_GPG_KEY_SSM_NAME --with-decryption --query "Parameter.Value" --out text)
-  - printf -- "${DEB_GPG_KEY}" | gpg --import --batch
-  - export DEB_SIGNING_PASSPHRASE=$(aws ssm get-parameter --region us-east-1 --name $DEB_SIGNING_PASSPHRASE_SSM_NAME --with-decryption --query "Parameter.Value" --out text)
-
-.test_deb:
-  stage: test
-  tags: [arch:amd64]
-  before_script:
-    - source /root/.bashrc
-  script:
-    # ensure that apt-get update in test script doesn't fail because of problems with other sources
-    - echo "" > /etc/apt/sources.list
-    - test/test.sh
-
-# For Debian >= 9/Ubuntu >= 16 where we do additional testing for
-# /etc/apt/trusted.gpg.d keyring existence in various scenarios
-.test_deb_new_platforms:
-  extends: .test_deb
-  # Unfortunately parallel/matrix doesn't support expansion,
-  # so we have to workaround this clumsily
-  # Also, to make it possible to have needs on this job, the values
-  # for "DD_LIST" and "OPW_LIST" have to be dd-no-signed and opw-no-signed
-  # so that the generated matrix job names would be unique
-  parallel:
-    matrix:
-      - ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "dd-no-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - OPW_LIST: "opw-no-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "dd-no-signed"
-        OPW_LIST: "opw-no-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "dd-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-      - OPW_LIST: "opw-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-      - DD_LIST: "dd-signed"
-        OPW_LIST: "opw-no-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "dd-no-signed"
-        OPW_LIST: "opw-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-      - DD_LIST: "dd-signed"
-        OPW_LIST: "opw-signed"
-        ENSURE_TRUSTED_GPG_D_KEYRING: "false"
-  before_script:
-    - apt-get update
-    - if [ "${DD_LIST}" = "dd-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "dd-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
-    - if [ "${OPW_LIST}" = "opw-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "opw-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi
-    - apt-get install -y $OMNIBUS_PACKAGE_DIR/*.deb debsig-verify
-    - rm -f ${DD_LIST_FILE} ${OPW_LIST_FILE}
-
 stages:
   - build
+  - upload
+  - promote_testing
   - test
-  - deploy
-
-build_deb:
-  stage: build
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: [arch:amd64]
-  artifacts:
-    expire_in: 2 weeks
-    paths:
-      - $OMNIBUS_PACKAGE_DIR
-  before_script:
-    - source /root/.bashrc
-  script:
-    - bundle install
-    - *setup_deb_signing_key
-    - PACKAGE_VERSION=${PACKAGE_VERSION_OVERRIDE:-$(git describe --tags)} bundle exec omnibus build ${PROJECT_NAME} --override=base_dir:${OMNIBUS_BASE_DIR}
-    - $S3_CP_CMD $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb $S3_ARTIFACTS_URI/$DESTINATION_DEB
-    - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
-
-### Testing notes
-# debsig-verify on Debian 7.11/Ubuntu 14.04 requires policy files to have
-# Policy xmlns start with "http://", not "https://"; to ensure this works
-# fine, we include two policy files per key and we test on Debian 7/Ubuntu 14
-# to verify that the package works fine on old Debian systems.
-# We also ensure that /etc/apt/trusted.gpg.d/datadog-archive-keyring.gpg
-# gets created on Debian 7/Ubuntu 14, since apt in these doesn't respect
-# the `[signed-by=...]` modifier in apt source files.
-.test_debian_7:
-  extends: .test_deb
-  image: registry.ddbuild.io/images/mirror/debian:7.11
-  variables:
-    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-  before_script:
-    # Debian 7 sources are already archived + their Release files are expired
-    - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
-    - apt-get update -o Acquire::Check-Valid-Until=false
-    - apt-get install -y --allow-unauthenticated debsig-verify
-    - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
-    # apt-get in Debian 7 doesn't work with local packages
-    - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
-    - rm -f ${DD_LIST_FILE}
-    # rebuild the apt database after installing the package with dpkg
-    - apt-get install -f
-
-test_debian_7_signed_by:
-  extends: .test_debian_7
-  variables:
-    DD_LIST_SIGNED_BY: "true"
-
-test_debian_7_not_signed_by:
-  extends: .test_debian_7
-
-test_debian_10:
-  extends: .test_deb_new_platforms
-  image: registry.ddbuild.io/images/mirror/debian:10.9
-
-.test_ubuntu_14:
-  extends: .test_deb
-  image: registry.ddbuild.io/images/mirror/ubuntu:14.04
-  variables:
-    ENSURE_TRUSTED_GPG_D_KEYRING: "true"
-  before_script:
-    - apt-get update
-    - apt-get install -y debsig-verify
-    # apt-get in Ubuntu 14 doesn't work with local packages
-    - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
-    - dpkg -i $OMNIBUS_PACKAGE_DIR/*.deb
-    - rm -f ${DD_LIST_FILE}
-    # rebuild the apt database after installing the package with dpkg
-    - apt-get install -f
-
-test_ubuntu_14_signed_by:
-  extends: .test_ubuntu_14
-  variables:
-    DD_LIST_SIGNED_BY: "true"
-
-test_ubuntu_14_not_signed_by:
-  extends: .test_ubuntu_14
-
-test_ubuntu_18:
-  extends: .test_deb_new_platforms
-  image: registry.ddbuild.io/images/mirror/ubuntu:18.04
-
-
-generate_testing_repo:
-  # You can use this task to generate a testing repository; the repository
-  # will contain the datadog-signing-keys package singed with the key used in
-  # this pipeline run and the repodata will also be signed with the same key.
-  stage: test
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: [arch:amd64]
-  when: manual
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - $TESTING_REPO_DIR
-  before_script:
-    - source /root/.bashrc
-  script:
-    - apt-get install -y apt-utils  # to get apt-ftparchive
-    - *setup_deb_signing_key
-    - mkdir -p $TESTING_REPO_DIR
-    - cd $TESTING_REPO_DIR
-    - cp $OMNIBUS_PACKAGE_DIR/datadog-signing-keys*.deb .
-    - apt-ftparchive packages . > Packages
-    - apt-ftparchive release . > Release
-    - set +x
-    - echo "$DEB_SIGNING_PASSPHRASE" | gpg --armor --sign --detach-sign --local-user "$DEB_GPG_KEY_NAME" --batch --no-tty --passphrase-fd 0 --digest-algo SHA256 -o Release.gpg Release
-
-deploy:
-  stage: deploy
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
-  tags: [arch:amd64]
-  needs: ["build_deb", "test_debian_7_signed_by", "test_debian_7_not_signed_by", "test_ubuntu_14_signed_by", "test_ubuntu_14_not_signed_by", "test_debian_10", "test_ubuntu_18"]
-  before_script:
-    - source /root/.bashrc
-    - ls $OMNIBUS_PACKAGE_DIR
-  when: manual
-  script:
-    - $S3_CP_CMD --recursive --exclude "*" --include "*.deb" $OMNIBUS_PACKAGE_DIR $S3_RELEASE_ARTIFACTS_URI/deb/all/
+  - promote

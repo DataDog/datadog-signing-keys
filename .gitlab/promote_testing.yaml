@@ -1,0 +1,15 @@
+---
+# promote_testing stage
+# Contains jobs which deploy Agent package to testing repsoitories that are used in kitchen tests.
+
+# Release to ephemeral testing repository
+trigger-package-promotion-pipeline-testing-stable:
+  extends: .package-promotion-template
+  stage: promote_testing
+  rules:
+    - when: always
+  variables:
+    TARGET_REPO: "testing"
+    TARGET_CHANNEL: "stable"
+    AUTO_RELEASE: "true"
+    FOLLOW: "true"
