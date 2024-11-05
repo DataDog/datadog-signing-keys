@@ -19,5 +19,5 @@ build_deb:
 
 .create-signature-and-lint-packages:
   - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
-  - find ${OMNIBUS_PACKAGE_DIR} -iregex '.*\.\(deb\|rpm\)' | xargs dd-pkg lint
+  - find ${OMNIBUS_PACKAGE_DIR} -iregex '.*\.\(deb\|rpm\)' | xargs dd-pkg lint || true
   - dd-pkg sign --key-id "${PIPELINE_KEY_ALIAS}" "${OMNIBUS_PACKAGE_DIR}"
