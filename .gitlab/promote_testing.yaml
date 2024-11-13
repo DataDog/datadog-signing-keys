@@ -1,10 +1,10 @@
 ---
 # promote_testing stage
-# Contains jobs which deploy Agent package to testing repsoitories that are used in kitchen tests.
+# Contains jobs which deploy signing keys package to testing repsoitories that are used in kitchen tests.
 
 # deb-s3 is not able to promote packages supporting all architectures in an empty repo:
 # https://github.com/krobertson/deb-s3/blob/5e6ac2897c2b5752ecea9ffe24d2d5f5ad75805c/lib/deb/s3/cli.rb#L204-L212
-# we need to create a dummy package, allowing us to promote the package to the testing repository
+# we need to first upload it to supported archs, allowing us to promote the package to the testing repository
 initialize-dummy-packages:
   stage: promote_testing
   image: $INTERNAL_REGISTRY/datadog-agent-buildimages/gitlab_agent_deploy:$DATADOG_AGENT_BUILDIMAGES
@@ -12,23 +12,16 @@ initialize-dummy-packages:
   rules:
     - when: always
   script: 
-    - IFS=' ' read -r -a ARCH_ARRAY <<< "$ARCHITECTURES"
-    - IFS=' ' read -r -a COMPONENT_ARRAY <<< "$COMPONENTS"
-    - S3_BASE_PATH="s3://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID}/dists/stable"
-    - touch Packages
-    - gzip -k Packages
+    - set +x
     - |
-      for ARCH in "${ARCH_ARRAY[@]}"; do
-        for COMPONENT in "${COMPONENT_ARRAY[@]}"; do
-          aws s3 cp Packages.gz "${S3_BASE_PATH}/${COMPONENT}/binary-${ARCH}/Packages.gz"
-        done
+      for component in 6 7 main observability-pipelines-worker-1 observability-pipelines-worker-2; do
+        deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" $OMNIBUS_PACKAGE_DIR/datadog-signing-keys_*.deb
       done
-    - echo "Repository architectures initialized successfully."
   variables:
-    S3_CP_OPTIONS: --only-show-errors --region us-east-1 --sse AES256
-    S3_CP_CMD: aws s3 cp $S3_CP_OPTIONS
-    ARCHITECTURES: amd64 arm64
-    COMPONENTS: 6 7 main observability-pipelines-worker-1 observability-pipelines-worker-2
+    PREFIX: pipeline-${CI_PIPELINE_ID}
+    DEB_S3_BUCKET: apttesting.datad0g.com
+    BRANCH: stable
+    ARCH: amd64
 
 # Release to ephemeral testing repository
 trigger-package-promotion-pipeline-testing-stable:
