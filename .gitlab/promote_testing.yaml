@@ -22,6 +22,9 @@ initialize-dummy-packages:
     DEB_S3_BUCKET: apttesting.datad0g.com
     BRANCH: stable
     ARCH: amd64
+  before_script:
+    - source /root/.bashrc
+    - ls $OMNIBUS_PACKAGE_DIR
 
 # Release to ephemeral testing repository
 trigger-package-promotion-pipeline-testing-stable:

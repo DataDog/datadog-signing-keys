@@ -10,7 +10,7 @@ include:
 variables:
   #Do not change this - must be the repository name for Kubernetes runners to work
   KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: "datadog-signing-keys"
-  DATADOG_AGENT_BUILDIMAGES: v47979770-a5a4cfd0
+  DATADOG_AGENT_BUILDIMAGES: v48332256-ab811924
   DD_PKG_VERSION: latest
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
