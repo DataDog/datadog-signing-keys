@@ -13,10 +13,18 @@ initialize-dummy-packages:
     - when: always
   script: 
     - set +x
+    # Rename deb files: replace "1.4.0" with "0.4.2" in filenames
+    - mkdir renamed_pkg
+    - |
+      for deb_file in $OMNIBUS_PACKAGE_DIR/*1.4.0*.deb; do
+          if [[ -f "$deb_file" ]]; then
+              new_name=$(echo "$deb_file" | sed 's/[0-9]\+\.[0-9]\+\.[0-9]\+/0.4.2/g')
+              cp -r "$deb_file" renamed_pkg/"$new_name"
+          fi
+      done
     - |
       for component in 6 7 main observability-pipelines-worker-1 observability-pipelines-worker-2; do
-        echo deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" $OMNIBUS_PACKAGE_DIR/datadog-signing-keys_*.deb
-        deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" $OMNIBUS_PACKAGE_DIR/datadog-signing-keys_*.deb
+        deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" renamed_pkg/datadog-signing-keys_*.deb
       done
   variables:
     PREFIX: pipeline-${CI_PIPELINE_ID}
