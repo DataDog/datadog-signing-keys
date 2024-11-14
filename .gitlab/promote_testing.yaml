@@ -18,8 +18,9 @@ initialize-dummy-packages:
     - |
       for deb_file in $OMNIBUS_PACKAGE_DIR/*1.4.0*.deb; do
           if [[ -f "$deb_file" ]]; then
-              new_name=$(echo "$deb_file" | sed 's/[0-9]\+\.[0-9]\+\.[0-9]\+/0.4.2/g')
-              cp -r "$deb_file" renamed_pkg/"$new_name"
+              base_name=$(basename "$deb_file")
+              new_name=$(echo "$base_name" | sed 's/[0-9]\+\.[0-9]\+\.[0-9]\+/0.4.2/g')
+              cp "$deb_file" renamed_pkg/"$new_name"
           fi
       done
     - |
