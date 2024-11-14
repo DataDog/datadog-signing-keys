@@ -15,6 +15,7 @@ initialize-dummy-packages:
     - set +x
     - |
       for component in 6 7 main observability-pipelines-worker-1 observability-pipelines-worker-2; do
+        echo deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" $OMNIBUS_PACKAGE_DIR/datadog-signing-keys_*.deb
         deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" $OMNIBUS_PACKAGE_DIR/datadog-signing-keys_*.deb
       done
   variables:
