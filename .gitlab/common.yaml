@@ -26,6 +26,7 @@
       fi
     - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
     - dd-pkg promote
+      --target-branch "spencergilbert/BARX-701/only-sign-packages-once"
       --release-product "${PRODUCT_NAME}"
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
       --target-repo ${TARGET_REPO}
