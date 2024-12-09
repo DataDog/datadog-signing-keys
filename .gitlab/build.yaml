@@ -1,7 +1,7 @@
 ---
 build_deb:
   stage: build
-  image: $INTERNAL_REGISTRY/datadog-agent-buildimages/deb_x64:$DATADOG_AGENT_BUILDIMAGES
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
   tags: [arch:amd64]
   variables:
     DD_PKG_ARCH: x86_64

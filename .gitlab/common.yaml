@@ -2,7 +2,7 @@
 # Base job template for package release
 .package-promotion-template:
   stage: promote
-  image: $INTERNAL_REGISTRY/datadog-agent-buildimages/gitlab_agent_deploy:$DATADOG_AGENT_BUILDIMAGES
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
   tags: ["arch:amd64"]
   needs:
     - job: upload-linux-packages

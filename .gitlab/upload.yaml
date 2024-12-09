@@ -1,7 +1,7 @@
 ---
 upload-linux-packages:
   stage: upload
-  image: $INTERNAL_REGISTRY/datadog-agent-buildimages/gitlab_agent_deploy:$DATADOG_AGENT_BUILDIMAGES
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:$CI_IMAGE_DEB_X64
   tags: ["arch:amd64"]
   rules:
     - when: on_success
