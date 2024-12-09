@@ -12,7 +12,7 @@
 # we need to first upload it to supported archs, allowing us to promote the package to the testing repository
 initialize-dummy-packages:
   stage: promote_testing
-  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:$CI_IMAGE_DEB_X64
   tags: ["arch:amd64"]
   rules:
     - when: always
