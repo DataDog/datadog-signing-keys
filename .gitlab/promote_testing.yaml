@@ -45,5 +45,7 @@ trigger-package-promotion-pipeline-testing-stable:
     AUTO_RELEASE: "true"
     FOLLOW: "true"
   needs:
+    - job: upload-linux-packages
+      artifacts: false
     - job: initialize-dummy-packages
       artifacts: false
