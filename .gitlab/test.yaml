@@ -2,6 +2,10 @@
 .test_deb:
   stage: test
   tags: [arch:amd64]
+  needs:
+    - job: trigger-package-promotion-pipeline-testing-stable
+      artifacts: false
+      optional: true
   before_script:
     - source /root/.bashrc
   script:
