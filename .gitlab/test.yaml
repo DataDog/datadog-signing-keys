@@ -72,8 +72,12 @@
     - echo -e "deb http://archive.debian.org/debian wheezy main\ndeb http://archive.debian.org/debian-security wheezy/updates main" > /etc/apt/sources.list
     - apt-get update -o Acquire::Check-Valid-Until=false
     - apt-get install -y --allow-unauthenticated apt-transport-https debsig-verify
-    - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
-    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
+    - |
+      if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then
+        echo "deb [signed-by=${USR_SHARE_KEYRING}] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE};
+      else
+        echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
+      fi
     - apt-get update -o Acquire::Check-Valid-Until=false
     - apt-get install -y datadog-signing-keys
     - rm -f ${DD_LIST_FILE} ${SIGNING_KEYS_FILE}
@@ -100,12 +104,15 @@ test_debian_10:
   before_script:
     - apt-get update
     - apt-get install -y debsig-verify
-    - if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then echo "deb [signed-by=${USR_SHARE_KEYRING}] https://not-important x y" > ${DD_LIST_FILE}; fi
-    - echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
+    - |
+      if [ "${DD_LIST_SIGNED_BY}" = "true" ]; then
+        echo "deb [signed-by=${USR_SHARE_KEYRING}] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
+      else
+        echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
+      fi
     - apt-get update
     - apt-get install -y datadog-signing-keys
     - rm -f ${DD_LIST_FILE} ${SIGNING_KEYS_FILE}
-    # rebuild the apt database after installing the package
     - apt-get install -f
 
 test_ubuntu_14_signed_by:
