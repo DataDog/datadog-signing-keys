@@ -79,7 +79,7 @@
         echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
       fi
     - apt-get update -o Acquire::Check-Valid-Until=false
-    - apt-get install -y datadog-signing-keys
+    - apt-get install -y --force-yes datadog-signing-keys
     - rm -f ${DD_LIST_FILE} ${SIGNING_KEYS_FILE}
     # rebuild the apt database after installing the package
     - apt-get install -f
@@ -111,7 +111,7 @@ test_debian_10:
         echo "deb [trusted=yes] http://apttesting.datad0g.com/pipeline-${CI_PIPELINE_ID} stable main" > ${SIGNING_KEYS_FILE}
       fi
     - apt-get update
-    - apt-get install -y datadog-signing-keys
+    - apt-get install -y --force-yes datadog-signing-keys
     - rm -f ${DD_LIST_FILE} ${SIGNING_KEYS_FILE}
     - apt-get install -f
 
