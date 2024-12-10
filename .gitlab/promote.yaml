@@ -1,0 +1,47 @@
+# Release custom production stable builds
+trigger-package-promotion-pipeline-prod-stable:
+  extends: .package-promotion-template
+  variables:
+    TARGET_REPO: "prod"
+    TARGET_CHANNEL: "stable"
+    AUTO_RELEASE: "false"
+
+# Release custom production beta builds
+trigger-package-promotion-pipeline-prod-beta:
+  extends: .package-promotion-template
+  variables:
+    TARGET_REPO: "prod"
+    TARGET_CHANNEL: "beta"
+    AUTO_RELEASE: "false"
+
+# Release custom production nightly builds
+trigger-package-promotion-pipeline-prod-nightly:
+  extends: .package-promotion-template
+  variables:
+    TARGET_REPO: "prod"
+    TARGET_CHANNEL: "nightly"
+    AUTO_RELEASE: "false"
+
+# Release custom staging stable builds
+trigger-package-promotion-pipeline-staging-stable:
+  extends: .package-promotion-template
+  variables:
+    TARGET_REPO: "staging"
+    TARGET_CHANNEL: "stable"
+    AUTO_RELEASE: "true"
+
+# Release custom staging beta builds
+trigger-package-promotion-pipeline-staging-beta:
+  extends: .package-promotion-template
+  variables:
+    TARGET_REPO: "staging"
+    TARGET_CHANNEL: "beta"
+    AUTO_RELEASE: "true"
+
+# Release custom staging nightly builds
+trigger-package-promotion-pipeline-staging-nightly:
+  extends: .package-promotion-template
+  variables:
+    TARGET_REPO: "staging"
+    TARGET_CHANNEL: "nightly"
+    AUTO_RELEASE: "true"

@@ -1,0 +1,51 @@
+---
+# promote_testing stage
+# Contains jobs which deploy signing keys package to testing repsoitories that are used in kitchen tests.
+
+.apt_install_dummy_package: &apt_install_dummy_package
+  - apt-get update
+  - mkdir latest_pkg
+  - apt-get -o "Dir::Cache::archives=./latest_pkg" install --download-only -y hello
+
+# deb-s3 is not able to promote packages supporting all architectures in an empty repo:
+# https://github.com/krobertson/deb-s3/blob/5e6ac2897c2b5752ecea9ffe24d2d5f5ad75805c/lib/deb/s3/cli.rb#L204-L212
+# we need to first upload it to supported archs, allowing us to promote the package to the testing repository
+initialize-dummy-packages:
+  stage: promote_testing
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:$CI_IMAGE_DEB_X64
+  tags: ["arch:amd64"]
+  rules:
+    - when: always
+  script: 
+    - set +x
+    # Rename deb files: replace "1.4.0" with "0.4.2" in filenames
+    - *apt_install_dummy_package
+    - |
+      for component in 6 7 main observability-pipelines-worker-1 observability-pipelines-worker-2; do
+        deb-s3 upload -c "$BRANCH" -m $component -b $DEB_S3_BUCKET -a $ARCH --preserve_versions --visibility public --prefix "$PREFIX" latest_pkg/hello*.deb
+      done
+  variables:
+    PREFIX: pipeline-${CI_PIPELINE_ID}
+    DEB_S3_BUCKET: apttesting.datad0g.com
+    BRANCH: stable
+    ARCH: amd64
+  before_script:
+    - source /root/.bashrc
+    - ls $OMNIBUS_PACKAGE_DIR
+
+# Release to ephemeral testing repository
+trigger-package-promotion-pipeline-testing-stable:
+  extends: .package-promotion-template
+  stage: promote_testing
+  rules:
+    - when: always
+  variables:
+    TARGET_REPO: "testing"
+    TARGET_CHANNEL: "stable"
+    AUTO_RELEASE: "true"
+    FOLLOW: "true"
+  needs:
+    - job: upload-linux-packages
+      artifacts: false
+    - job: initialize-dummy-packages
+      artifacts: false
