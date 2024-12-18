@@ -1,0 +1,12 @@
+---
+upload-linux-packages:
+  stage: upload
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:$CI_IMAGE_DEB_X64
+  tags: ["arch:amd64"]
+  rules:
+    - when: on_success
+  variables:
+    DD_PKG_ARCH: x86_64
+  script:
+    - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
+    - dd-pkg upload "${OMNIBUS_PACKAGE_DIR}" --project-name "${PRODUCT_NAME}"

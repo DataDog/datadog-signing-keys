@@ -1,0 +1,23 @@
+---
+build_deb:
+  stage: build
+  image: registry.ddbuild.io/ci/datadog-agent-buildimages/deb_x64:$CI_IMAGE_DEB_X64
+  tags: [arch:amd64]
+  variables:
+    DD_PKG_ARCH: x86_64
+  artifacts:
+    expire_in: 2 weeks
+    paths:
+      - $OMNIBUS_PACKAGE_DIR
+  before_script:
+    - source /root/.bashrc
+  script:
+    - bundle install
+    - PACKAGE_VERSION=${PACKAGE_VERSION_OVERRIDE:-$RELEASE_VERSION_DEPLOY} bundle exec omnibus build ${PROJECT_NAME} --override=base_dir:${OMNIBUS_BASE_DIR}
+    - mkdir -p $OMNIBUS_PACKAGE_DIR && cp $OMNIBUS_BASE_DIR/pkg/datadog-signing-keys*.deb{,.metadata.json} $OMNIBUS_PACKAGE_DIR
+    - !reference [.create-signature-and-lint-packages]
+
+.create-signature-and-lint-packages:
+  - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
+  - find ${OMNIBUS_PACKAGE_DIR} -iregex '.*\.\(deb\|rpm\)' | xargs dd-pkg lint || true
+  - dd-pkg sign --key-id "${PIPELINE_KEY_ALIAS}" "${OMNIBUS_PACKAGE_DIR}"
