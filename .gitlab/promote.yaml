@@ -33,6 +33,8 @@ trigger-package-promotion-pipeline-staging-stable:
 # Release custom staging beta builds
 trigger-package-promotion-pipeline-staging-beta:
   extends: .package-promotion-template
+  rules:
+    - when: manual
   variables:
     TARGET_REPO: "staging"
     TARGET_CHANNEL: "beta"
