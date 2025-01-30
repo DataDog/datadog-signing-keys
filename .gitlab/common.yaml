@@ -30,5 +30,4 @@
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
       --target-repo ${TARGET_REPO}
       --target-channel ${TARGET_CHANNEL}
-      --target-branch spencergilbert/cache-signed-debs
       $OPTIONAL_FLAGS

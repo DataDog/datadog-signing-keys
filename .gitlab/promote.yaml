@@ -43,6 +43,8 @@ trigger-package-promotion-pipeline-staging-beta:
 # Release custom staging nightly builds
 trigger-package-promotion-pipeline-staging-nightly:
   extends: .package-promotion-template
+  rules:
+      - when: manual
   variables:
     TARGET_REPO: "staging"
     TARGET_CHANNEL: "nightly"
