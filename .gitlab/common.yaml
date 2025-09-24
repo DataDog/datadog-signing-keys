@@ -8,8 +8,6 @@
     - job: upload-linux-packages
       artifacts: false
   before_script:
-    # GITLAB_TOKEN is commented out to test short-lived token capabilities
-    # - export GITLAB_TOKEN=${CI_JOB_TOKEN}
     - export DD_PKG_ARCH=x86_64
   rules:
     - if: $CI_COMMIT_TAG != null
@@ -26,10 +24,11 @@
         export GITLAB_TOKEN=$(vault kv get -field=project-token kv/k8s/gitlab-runner/datadog-signing-keys/agent-release-management-read-token)
         OPTIONAL_FLAGS+="--follow"
       fi
-    - echo "OPTIONAL_FLAGS: ${OPTIONAL_FLAGS}"
+    - |
+      echo "OPTIONAL_FLAGS: ${OPTIONAL_FLAGS}"
+      echo "GITLAB_TOKEN: ${GITLAB_TOKEN}"
+      echo "URL: https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz"
     - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
-    - echo "URL: https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz"
-    - echo "GITLAB_TOKEN: ${GITLAB_TOKEN}"
     - dd-pkg promote
       --release-product "${PRODUCT_NAME}"
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
