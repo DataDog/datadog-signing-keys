@@ -8,7 +8,8 @@
     - job: upload-linux-packages
       artifacts: false
   before_script:
-    - export GITLAB_TOKEN=${CI_JOB_TOKEN}
+    # GITLAB_TOKEN is commented out to test short-lived token capabilities
+    # - export GITLAB_TOKEN=${CI_JOB_TOKEN}
     - export DD_PKG_ARCH=x86_64
   rules:
     - if: $CI_COMMIT_TAG != null
