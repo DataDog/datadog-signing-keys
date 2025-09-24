@@ -8,7 +8,7 @@ include:
   - /.gitlab/promote.yaml
 
 variables:
-  DD_PKG_VERSION: latest
+  DD_PKG_VERSION: 0.5.1-rc2
   CI_IMAGE_DEB_X64: v47979770-a5a4cfd0
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus

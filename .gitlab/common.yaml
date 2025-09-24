@@ -26,6 +26,11 @@
         OPTIONAL_FLAGS+="--follow"
       fi
     - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
+    - echo "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz"
+    - echo "${PRODUCT_NAME}"
+    - echo "${RELEASE_VERSION_DEPLOY}"-1
+    - echo "${TARGET_REPO}"
+    - echo "${TARGET_CHANNEL}"
     - dd-pkg promote
       --release-product "${PRODUCT_NAME}"
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
