@@ -8,6 +8,7 @@
     - job: upload-linux-packages
       artifacts: false
   before_script:
+    - unset GITLAB_TOKEN
     - export DD_PKG_ARCH=x86_64
   rules:
     - if: $CI_COMMIT_TAG != null
