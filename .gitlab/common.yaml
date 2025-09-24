@@ -26,13 +26,14 @@
         export GITLAB_TOKEN=$(vault kv get -field=project-token kv/k8s/gitlab-runner/datadog-signing-keys/agent-release-management-read-token)
         OPTIONAL_FLAGS+="--follow"
       fi
-    - echo "${OPTIONAL_FLAGS}"
+    - echo "OPTIONAL_FLAGS: ${OPTIONAL_FLAGS}"
     - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
-    - echo "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz"
-    - echo "${PRODUCT_NAME}"
-    - echo "${RELEASE_VERSION_DEPLOY}"-1
-    - echo "${TARGET_REPO}"
-    - echo "${TARGET_CHANNEL}"
+    - echo "URL: https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz"
+    - echo "GITLAB_TOKEN: ${GITLAB_TOKEN}"
+    - echo "PRODUCT_NAME: ${PRODUCT_NAME}"
+    - echo "RELEASE_VERSION_DEPLOY: ${RELEASE_VERSION_DEPLOY}"-1
+    - echo "TARGET_REPO: ${TARGET_REPO}"
+    - echo "TARGET_CHANNEL: ${TARGET_CHANNEL}"
     - dd-pkg promote
       --release-product "${PRODUCT_NAME}"
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
