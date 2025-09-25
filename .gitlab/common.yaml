@@ -14,9 +14,10 @@
       when: manual
   allow_failure: true
   script:
-    - OPTIONAL_FLAGS=""
-    - GITLAB_TOKEN=""
-    - export FOLLOW=true
+    - |
+      OPTIONAL_FLAGS=""
+      GITLAB_TOKEN=""
+      FOLLOW=true
     - |
       if [ "$AUTO_RELEASE" = "true" ]; then
         OPTIONAL_FLAGS+="--auto-release "
