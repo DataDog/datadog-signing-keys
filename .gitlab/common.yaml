@@ -15,7 +15,7 @@
   allow_failure: true
   script:
     - |
-      OPTIONAL_FLAGS="--follow"
+      OPTIONAL_FLAGS="--follow "
       GITLAB_TOKEN=""
     - |
       if [ "$AUTO_RELEASE" = "true" ]; then
