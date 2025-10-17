@@ -26,10 +26,10 @@
       fi
     - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
     - dd-pkg promote
-      --release-product "observability-pipelines-worker"
+      --release-product "${PRODUCT_NAME}"
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
       --target-repo ${TARGET_REPO}
       --target-channel ${TARGET_CHANNEL}
       --target-branch "matthew.deguzman/compute-key-id-from-release-product"
-      --key-id "alias/ci_datadog-signing-keys_pipeline-key"
       $OPTIONAL_FLAGS
+
