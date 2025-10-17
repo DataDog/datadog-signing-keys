@@ -33,4 +33,3 @@
       --target-branch "matthew.deguzman/compute-key-id-from-release-product"
       --key-id "alias/ci_datadog-signing-keys_pipeline-key"
       $OPTIONAL_FLAGS
-
