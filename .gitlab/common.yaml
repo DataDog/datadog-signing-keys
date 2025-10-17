@@ -32,4 +32,3 @@
       --target-channel ${TARGET_CHANNEL}
       --target-branch "matthew.deguzman/compute-key-id-from-release-product"
       $OPTIONAL_FLAGS
-
