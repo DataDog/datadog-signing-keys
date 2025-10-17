@@ -31,5 +31,6 @@
       --target-repo ${TARGET_REPO}
       --target-channel ${TARGET_CHANNEL}
       --target-branch "matthew.deguzman/compute-key-id-from-release-product"
+      --key-id "alias/ci_observability-pipelines-worker_pipeline-key"
       $OPTIONAL_FLAGS
 
