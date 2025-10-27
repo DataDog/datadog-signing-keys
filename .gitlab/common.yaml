@@ -30,6 +30,6 @@
       --release-version "${RELEASE_VERSION_DEPLOY}"-1
       --target-repo ${TARGET_REPO}
       --target-channel ${TARGET_CHANNEL}
-      --target-branch "matthew.deguzman/compute-key-id-from-release-product"
+      --target-branch "matthew.deguzman/do-not-merge"
       $OPTIONAL_FLAGS
 
