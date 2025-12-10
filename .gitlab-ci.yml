@@ -8,7 +8,7 @@ include:
   - /.gitlab/promote.yaml
 
 variables:
-  DD_PKG_VERSION: 0.6.0-beta.2
+  DD_PKG_VERSION: 0.6.0-beta.4
   CI_IMAGE_DEB_X64: v47979770-a5a4cfd0
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
@@ -16,7 +16,7 @@ variables:
   PACKAGE_VERSION_OVERRIDE: ""
   PIPELINE_KEY_ALIAS: "alias/ci_datadog-signing-keys_pipeline-key"
   PROJECT_NAME: datadog-signing-keys
-  GITLAB_BASE_URL: "https://artifact-gateway.us1.staging.dog/internal/artifact-gateway/api/v4"
+  DD_PKG_GITLAB_URL: "https://artifact-gateway.us1.staging.dog/internal/artifact-gateway/api/v4"
   USR_SHARE_KEYRING: /usr/share/keyrings/datadog-archive-keyring.gpg
   DD_LIST_FILE: /etc/apt/sources.list.d/datadog.list
   OPW_LIST_FILE: /etc/apt/sources.list.d/datadog-observability-pipelines-worker.list
