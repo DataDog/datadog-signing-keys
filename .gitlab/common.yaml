@@ -21,7 +21,6 @@
         OPTIONAL_FLAGS+="--auto-release "
       fi
       if [ "$FOLLOW" = "true" ]; then
-        export GITLAB_TOKEN=$(vault kv get -field=project-token kv/k8s/gitlab-runner/datadog-signing-keys/agent-release-management-read-token)
         OPTIONAL_FLAGS+="--follow"
       fi
     - curl -sSL "https://dd-package-tools.s3.amazonaws.com/dd-pkg/${DD_PKG_VERSION}/dd-pkg_Linux_${DD_PKG_ARCH}.tar.gz" | tar -xz -C /usr/local/bin dd-pkg
