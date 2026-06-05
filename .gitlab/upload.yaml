@@ -5,7 +5,5 @@ upload-linux-packages:
   tags: ["arch:amd64"]
   rules:
     - when: on_success
-  variables:
-    DD_PKG_ARCH: x86_64
   script:
     - dd-pkg upload "${OMNIBUS_PACKAGE_DIR}" --project-name "${PRODUCT_NAME}"
