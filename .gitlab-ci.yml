@@ -9,7 +9,7 @@ include:
 
 variables:
   DD_PKG_VERSION: latest
-  CI_IMAGE_DEB_X64: v47979770-a5a4cfd0
+  CI_IMAGE_LINUX: v117105987-c5030d62
   CI_IMAGE_GITLAB_AGENT_DEPLOY: v117105987-c5030d62
   DESTINATION_DEB: datadog-signing-keys.deb
   OMNIBUS_BASE_DIR: /.omnibus
