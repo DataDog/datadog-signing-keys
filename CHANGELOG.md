@@ -1,3 +1,10 @@
+# 1.4.1 / 2026-06-10
+
+* Migrate to artifact-gateway for package promotion
+* Restructure GitLab CI pipeline; remove omnibus-software dependency
+* Fix integration tests for Debian 10 and deb7
+* Update buildimages; add test for future signing key
+
 # 1.4.0 / 2024-08-27
  
 * Rotate package signing keys (2024 key rotation)
