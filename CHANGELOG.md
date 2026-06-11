@@ -1,3 +1,10 @@
+# 1.4.1 / 2026-06-10
+
+* Fix integration tests for Debian 10 and deb7
+* Update buildimages; add test for future signing key
+* Migrate to new package promotion infrastructure
+* Restructure GitLab CI pipeline; remove omnibus-software dependency
+
 # 1.4.0 / 2024-08-27
  
 * Rotate package signing keys (2024 key rotation)
