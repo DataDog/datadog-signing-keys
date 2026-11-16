@@ -46,6 +46,13 @@
         OPW_LIST: "opw-signed"
         ENSURE_TRUSTED_GPG_D_KEYRING: "false"
   before_script:
+    # A single Ubuntu mirror sometimes answers 503. Let apt fall back to other
+    # mirrors, as datadog-agent's Dockerfiles do. Debian sources are unchanged.
+    - |
+      if grep -q "archive.ubuntu.com" /etc/apt/sources.list 2>/dev/null; then
+        printf 'http://us-east-1.ec2.archive.ubuntu.com/ubuntu\nhttp://archive.ubuntu.com/ubuntu\nhttp://mirror.leaseweb.net/ubuntu\n' > /etc/apt/mirrorlist.main
+        sed -i -E 's#http://(archive|security)\.ubuntu\.com/ubuntu/?#mirror+file:/etc/apt/mirrorlist.main#g' /etc/apt/sources.list
+      fi
     - apt-get update
     - if [ "${DD_LIST}" = "dd-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${DD_LIST_FILE}; elif [ "${DD_LIST}" = "dd-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${DD_LIST_FILE}; fi
     - if [ "${OPW_LIST}" = "opw-signed" ]; then echo "${SOURCE_SIGNED_BY}" > ${OPW_LIST_FILE}; elif [ "${OPW_LIST}" = "opw-no-signed" ]; then echo "${SOURCE_NO_SIGNED_BY}" > ${OPW_LIST_FILE}; fi

@@ -2,13 +2,11 @@
 # Base job template for package release
 .package-promotion-template:
   stage: promote
-  image: registry.ddbuild.io/ci/datadog-agent-buildimages/gitlab_agent_deploy:$CI_IMAGE_GITLAB_AGENT_DEPLOY
+  image: $DD_PKG_IMAGE
   tags: ["arch:amd64"]
   needs:
     - job: upload-linux-packages
       artifacts: false
-  before_script:
-    - export GITLAB_TOKEN=${CI_JOB_TOKEN}
   rules:
     - if: $CI_COMMIT_TAG != null
       when: manual
